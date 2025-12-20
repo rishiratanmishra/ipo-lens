@@ -26,7 +26,7 @@ function getMockIPOs() {
 }
 
 if ($conn) {
-    $query = "SELECT *, gmp as gmp_price FROM ipos ORDER BY open_date DESC";
+    $query = "SELECT *, gmp as gmp_price FROM wp_ipos ORDER BY open_date DESC";
     $stmt = $conn->prepare($query);
     $stmt->execute();
     $num = $stmt->rowCount();

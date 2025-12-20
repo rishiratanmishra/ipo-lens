@@ -109,7 +109,7 @@ export default function HomeScreen({ navigation }) {
 
                 {item.gmp_price && (
                     <View style={[styles.gmpRow, { backgroundColor: theme.colors.surfaceLight }]}>
-                        <Text style={[styles.gmpLabel, { color: theme.colors.secondary }]}>Expected GMP: </Text>
+                        <Text style={[styles.gmpLabel, { color: theme.colors.textSecondary }]}>Expected GMP: </Text>
                         <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{item.gmp_price}</Text>
                     </View>
                 )}

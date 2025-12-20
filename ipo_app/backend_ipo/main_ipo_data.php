@@ -55,7 +55,7 @@ function processIPOList($list, $defaultStatus, $conn) {
         $status = 'UPCOMING';
         if ($statusRaw === 'LISTED') $status = 'LISTED';
         else if ($statusRaw === 'UPCOMING') $status = 'UPCOMING';
-        else if ($statusRaw === 'OPEN') $status = 'OPEN';
+        else if ($statusRaw === 'OPEN' || $statusRaw === 'ACTIVE') $status = 'OPEN';
         else if ($statusRaw === 'CLOSED') $status = 'CLOSED';
         
         // Execute Upsert
@@ -121,6 +121,8 @@ function processIPOList($list, $defaultStatus, $conn) {
 
 $countUpcoming = 0;
 $countListed = 0;
+$countActive = 0;
+$countClosed = 0;
 
 if (isset($data['upcoming'])) {
     $countUpcoming = processIPOList($data['upcoming'], 'UPCOMING', $conn);
@@ -130,6 +132,14 @@ if (isset($data['listed'])) {
     $countListed = processIPOList($data['listed'], 'LISTED', $conn);
 }
 
-echo "[MAIN] Sync Complete. Processed $countUpcoming upcoming and $countListed listed IPOs.\n";
+if (isset($data['active'])) {
+    $countActive = processIPOList($data['active'], 'OPEN', $conn);
+}
+
+if (isset($data['closed'])) {
+    $countClosed = processIPOList($data['closed'], 'CLOSED', $conn);
+}
+
+echo "[MAIN] Sync Complete. Processed $countUpcoming upcoming, $countListed listed, $countActive active, and $countClosed closed IPOs.\n";
 
 ?>

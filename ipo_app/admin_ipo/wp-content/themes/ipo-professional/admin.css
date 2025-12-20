@@ -1,0 +1,160 @@
+/* Modern Professional Admin Theme */
+
+/* Admin Menu */
+#adminmenu,
+#adminmenu .wp-submenu,
+#adminmenuback,
+#adminmenuwrap {
+    background-color: #1e1e2d !important;
+}
+
+#adminmenu a {
+    color: #a2a3b7 !important;
+}
+
+#adminmenu li.menu-top:hover,
+#adminmenu li.opensub>a.menu-top,
+#adminmenu li>a.menu-top:focus {
+    background-color: #1b1b28 !important;
+    color: #ffffff !important;
+}
+
+#adminmenu li.current a.menu-top,
+#adminmenu li.wp-has-current-submenu a.wp-has-current-submenu {
+    background-color: #3699ff !important;
+    color: #ffffff !important;
+}
+
+/* Admin Bar */
+#wpadminbar {
+    background-color: #1e1e2d !important;
+}
+
+/* Content Area */
+#wpbody {
+    background-color: #f5f8fa;
+}
+
+.wrap h1.wp-heading-inline {
+    font-weight: 600;
+    color: #181c32;
+    padding: 20px 0;
+}
+
+/* Cards / Tables */
+.wp-list-table {
+    border: 0 !important;
+    box-shadow: 0 0 20px 0 rgba(76, 87, 125, 0.02);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.wp-list-table thead th {
+    background-color: #ffffff;
+    border-bottom: 2px solid #ebedf3;
+    color: #b5b5c3;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 15px;
+}
+
+.wp-list-table tbody td {
+    background-color: #ffffff;
+    vertical-align: middle;
+    padding: 15px;
+    color: #3f4254;
+    font-weight: 500;
+}
+
+.wp-list-table tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+/* Buttons */
+.wp-core-ui .button-primary {
+    background: #3699ff !important;
+    border-color: #3699ff !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border-radius: 4px;
+    padding: 5px 20px;
+    height: auto;
+    font-weight: 600;
+}
+
+.wp-core-ui .button-primary:hover {
+    background: #187de4 !important;
+    border-color: #187de4 !important;
+}
+
+/* Form Inputs */
+input[type=text],
+input[type=search],
+input[type=tel],
+input[type=time],
+input[type=url],
+input[type=week],
+input[type=password],
+input[type=checkbox],
+input[type=color],
+input[type=date],
+input[type=datetime],
+input[type=datetime-local],
+input[type=email],
+input[type=month],
+input[type=number],
+select,
+textarea {
+    border: 1px solid #e2e5ec;
+    background-color: #f3f6f9;
+    box-shadow: none !important;
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #3f4254;
+}
+
+input:focus,
+textarea:focus {
+    background-color: #ffffff;
+    border-color: #69b3ff;
+}
+
+/* Badges */
+.badge-upcoming {
+    background: #fff4de;
+    color: #ffa800;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.badge-open {
+    background: #c9f7f5;
+    color: #1bc5bd;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.badge-closed {
+    background: #ffe2e5;
+    color: #f64e60;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.badge-listed {
+    background: #e1f0ff;
+    color: #3699ff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}

@@ -1,0 +1,45 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Editor/IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build Artifacts
+dist/
+build/
+coverage/
+
+# Archives
+*.zip
+*.tar
+*.gz
+*.rar
+
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/backups/
+!wp-content/plugins/
+!wp-content/themes/
+
+# React Native / Expo
+.expo/
+web-build/
+.jsc/
+.watchmanconfig
+android/
+ios/

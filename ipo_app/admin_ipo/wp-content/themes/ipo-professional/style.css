@@ -1,0 +1,18 @@
+/*
+Theme Name: IPO Professional
+Theme URI: https://zolaha.com
+Author: YourIPO Team
+Author URI: https://zolaha.com
+Description: A professional, custom theme designed for the IPO Admin Panel.
+Version: 1.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: ipo-professional
+*/
+
+/* Basic Reset */
+body {
+    background-color: #f0f0f1;
+    color: #3c434a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}

@@ -3,7 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../theme';
+import { AuthContext } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { theme as defaultTheme } from '../theme';
 
 const { width } = Dimensions.get('window');
 
@@ -15,7 +17,7 @@ const MOCK_SUBSCRIPTION_DATA = [
         subscribed: '15.4x',
         priceRange: '₹475 - 500',
         progress: 0.7,
-        logo: 'https://companieslogo.com/img/orig/TATA.NS-72dbc7c3.png?t=1631949774' // Placeholder logo URL
+        logo: 'https://companieslogo.com/img/orig/TATA.NS-72dbc7c3.png?t=1631949774'
     },
     {
         id: '2',
@@ -24,58 +26,39 @@ const MOCK_SUBSCRIPTION_DATA = [
         subscribed: '64.x',
         priceRange: '₹160 - 169',
         progress: 0.9,
+        logo: 'https://companieslogo.com/img/orig/500325.BO.png'
     }
 ];
 
 const MOCK_GMP_DATA = [
-    {
-        id: '1',
-        name: 'Doms Industries',
-        tag: 'TOP GAINER',
-        gmp: '+65%',
-        exp: '₹1,200',
-        color: '#10B981'
-    },
-    {
-        id: '2',
-        name: 'Inox India',
-        gmp: '+45%',
-        exp: 'GMP Value',
-        color: '#10B981'
-    },
-    {
-        id: '3',
-        name: 'Motisons',
-        gmp: '+110%',
-        exp: 'GMP Value',
-        color: '#10B981'
-    }
-];
-
-const MOCK_LIST_DATA = [
     { id: '1', name: 'Inox India Ltd', range: 'Dec 14 - 18', status: 'Open', price: '₹627 - 660', gmp: '45%' },
     { id: '2', name: 'Motisons Jewellers', range: 'Dec 18 - 20', status: 'Upcoming', type: 'SME', price: '₹52 - 55', gmp: '110%' },
     { id: '3', name: 'Muthoot Microfin', range: 'Dec 18 - 20', status: 'Upcoming', price: '₹277 - 291', gmp: '12%' },
 ];
 
 export default function HomeScreen({ navigation }) {
+    const { user } = React.useContext(AuthContext);
+    const { theme } = useTheme();
+
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
+            <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
                 <View style={styles.headerLeft}>
-                    <View style={styles.avatar}>
-                        <Ionicons name="person" size={20} color={theme.colors.primary} />
-                    </View>
+                    <TouchableOpacity onPress={() => navigation.navigate('Menu')} style={[styles.avatar, { backgroundColor: theme.colors.surfaceLight }]}>
+                        <Ionicons name="menu" size={24} color={theme.colors.primary} />
+                    </TouchableOpacity>
                     <View>
                         <Text style={styles.welcomeText}>WELCOME BACK</Text>
-                        <Text style={styles.userName}>Investor</Text>
+                        <Text style={[styles.userName, { color: theme.colors.text }]}>
+                            {user ? user.username.split(' ')[0] : 'Investor'}
+                        </Text>
                     </View>
                 </View>
                 <View style={styles.headerRight}>
-                    <TouchableOpacity style={styles.iconButton}>
+                    <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.colors.surfaceLight }]}>
                         <Ionicons name="search" size={22} color={theme.colors.textSecondary} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.iconButton}>
+                    <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.colors.surfaceLight }]}>
                         <Ionicons name="notifications-outline" size={22} color={theme.colors.success} />
                         <View style={styles.badge} />
                     </TouchableOpacity>
@@ -83,23 +66,24 @@ export default function HomeScreen({ navigation }) {
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                
+
                 {/* Tickers */}
-                <View style={styles.tickerContainer}>
+                <View style={[styles.tickerContainer, { backgroundColor: theme.colors.surface }]}>
                     <View style={styles.tickerCard}>
                         <Text style={styles.tickerLabel}>NIFTY 50</Text>
                         <View style={styles.tickerValueRow}>
-                            <Text style={styles.tickerValue}>20,930.50</Text>
+                            <Text style={[styles.tickerValue, { color: theme.colors.text }]}>20,930.50</Text>
                             <View style={styles.tickerChangePositive}>
                                 <Ionicons name="trending-up" size={12} color={theme.colors.success} />
                                 <Text style={styles.tickerChangeText}>0.5%</Text>
                             </View>
                         </View>
                     </View>
+                    <View style={styles.dividerVertical} />
                     <View style={styles.tickerCard}>
                         <Text style={styles.tickerLabel}>SENSEX</Text>
                         <View style={styles.tickerValueRow}>
-                            <Text style={styles.tickerValue}>69,500.10</Text>
+                            <Text style={[styles.tickerValue, { color: theme.colors.text }]}>69,500.10</Text>
                             <View style={styles.tickerChangePositive}>
                                 <Ionicons name="trending-up" size={12} color={theme.colors.success} />
                                 <Text style={styles.tickerChangeText}>0.2%</Text>
@@ -111,156 +95,105 @@ export default function HomeScreen({ navigation }) {
                 {/* Open for Subscription */}
                 <View style={styles.sectionHeader}>
                     <View style={styles.sectionTitleRow}>
-                        <View style={styles.statusDot} />
-                        <Text style={styles.sectionTitle}>Open for Subscription</Text>
+                        <View style={[styles.statusDot, { backgroundColor: theme.colors.primary }]} />
+                        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Open for Subscription</Text>
                     </View>
                     <TouchableOpacity onPress={() => navigation.navigate('IPO')}>
-                         <Text style={styles.viewAll}>View All</Text>
+                        <Text style={[styles.viewAll, { color: theme.colors.primary }]}>View All</Text>
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: 20 }}
+                >
                     {MOCK_SUBSCRIPTION_DATA.map((item) => (
-                        <TouchableOpacity 
-                            key={item.id} 
-                            style={styles.subscriptionCard}
+                        <TouchableOpacity
+                            key={item.id}
+                            style={[styles.trendingCard, { backgroundColor: theme.colors.surface }]}
                             onPress={() => navigation.navigate('IPODetail', { ipo: item })}
                         >
-                            <View style={styles.subCardHeader}>
-                                <View style={styles.logoPlaceholder}>
-                                    <Ionicons name="business" size={24} color={theme.colors.text} />
-                                </View>
-                                <View>
-                                    <View style={styles.endsInBadge}>
-                                        <Text style={styles.endsInText}>ENDS IN 2D</Text>
-                                    </View>
-                                    <Text style={styles.companyName}>{item.name}</Text>
-                                    <View style={styles.tag}>
-                                        <Text style={styles.tagText}>{item.type}</Text>
-                                    </View>
+                            <View style={styles.cardHeader}>
+                                <Image source={{ uri: item.logo || 'https://via.placeholder.com/50' }} style={styles.companyLogo} />
+                                <View style={[styles.statusBadge, { backgroundColor: theme.colors.primary + '20' }]}>
+                                    <Text style={[styles.statusText, { color: theme.colors.primary }]}>Live</Text>
                                 </View>
                             </View>
-                            
-                            <View style={styles.subStatsRow}>
-                                <View>
-                                    <Text style={styles.statLabel}>SUBSCRIBED</Text>
-                                    <Text style={[styles.statValue, {color: theme.colors.success, fontSize: 20}]}>{item.subscribed}</Text>
-                                </View>
-                                <View>
-                                    <Text style={styles.statLabel}>PRICE RANGE</Text>
-                                    <Text style={styles.statValue}>{item.priceRange}</Text>
-                                </View>
+                            <Text style={[styles.companyName, { color: theme.colors.text }]}>{item.name}</Text>
+                            <Text style={[styles.companyType, { color: theme.colors.textSecondary }]}>{item.type}</Text>
+
+                            <View style={styles.subscriptionInfo}>
+                                <Text style={[styles.subLabel, { color: theme.colors.textSecondary }]}>Subscribed</Text>
+                                <Text style={[styles.subValue, { color: theme.colors.text }]}>{item.subscribed}</Text>
                             </View>
 
-                            <View style={styles.progressBarBg}>
-                                <View style={[styles.progressBarFill, {width: `${item.progress * 100}%`}]} />
+                            <View style={[styles.progressBarBg, { backgroundColor: theme.colors.border }]}>
+                                <View style={[styles.progressBarFill, { width: `${item.progress * 100}%`, backgroundColor: theme.colors.primary }]} />
                             </View>
-
-                            <TouchableOpacity style={styles.applyButton}>
-                                <Text style={styles.applyButtonText}>Apply Now</Text>
-                                <Ionicons name="arrow-forward" size={16} color={theme.colors.background} />
-                            </TouchableOpacity>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
 
-                {/* Trending GMP */}
-                <View style={[styles.sectionHeader, {marginTop: theme.spacing.xl}]}>
-                    <View style={styles.sectionTitleRow}>
-                        <Text style={styles.sectionTitle}>Trending GMP</Text>
-                        <Text style={{fontSize: 20}}> 🔥</Text>
+                {/* Market Pulse (GMP) */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Market Pulse (GMP)</Text>
+                        <TouchableOpacity>
+                            <Text style={[styles.seeAllText, { color: theme.colors.primary }]}>See All</Text>
+                        </TouchableOpacity>
                     </View>
-                </View>
 
-                <View style={styles.gmpGrid}>
-                    <TouchableOpacity style={styles.gmpHeroCard}>
-                        <Text style={styles.topGainerText}>TOP GAINER</Text>
-                        <Text style={styles.gmpHeroName}>{MOCK_GMP_DATA[0].name}</Text>
-                        <Text style={styles.gmpHeroValue}>{MOCK_GMP_DATA[0].gmp}</Text>
-                        <Text style={styles.gmpHeroExp}>Exp: {MOCK_GMP_DATA[0].exp}</Text>
-                    </TouchableOpacity>
-                    
-                    <View style={styles.gmpSideColumn}>
-                        {MOCK_GMP_DATA.slice(1).map((item) => (
-                            <View key={item.id} style={styles.gmpSmallCard}>
-                                <Text style={styles.gmpSmallName}>{item.name}</Text>
-                                <Text style={styles.gmpSmallLabel}>{item.exp}</Text>
-                                <Text style={[styles.gmpSmallValue, {color: item.color}]}>{item.gmp}</Text>
-                            </View>
-                        ))}
-                    </View>
-                </View>
-
-                {/* List Filters */}
-                <View style={styles.filterRow}>
-                    <TouchableOpacity style={[styles.filterChip, styles.activeFilterChip]}>
-                        <Text style={styles.activeFilterText}>Upcoming</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.filterChip}>
-                        <Text style={styles.filterText}>Mainboard</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.filterChip}>
-                        <Text style={styles.filterText}>SME</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* IPO List */}
-                {MOCK_LIST_DATA.map((item) => (
-                    <TouchableOpacity 
-                        key={item.id} 
-                        style={styles.listCard}
-                         onPress={() => navigation.navigate('IPODetail', { ipo: item })}
-                    >
-                        <View style={styles.listHeader}>
-                            <View style={styles.listLogo}>
-                                <Text style={styles.listLogoText}>{item.name.substring(0, 4)}</Text>
-                            </View>
-                            <View style={styles.listInfo}>
-                                <Text style={styles.listName}>{item.name}</Text>
-                                <Text style={styles.listStatus}>{item.range} • <Text style={{color: item.status === 'Open' ? theme.colors.success : theme.colors.textSecondary}}>{item.status}</Text></Text>
-                            </View>
-                            {item.type === 'SME' && (
-                                <View style={styles.smeTag}>
-                                    <Text style={styles.smeTagText}>SME</Text>
+                    {MOCK_GMP_DATA.map((item) => (
+                        <TouchableOpacity
+                            key={item.id}
+                            style={[styles.gmpCard, { backgroundColor: theme.colors.surface }]}
+                            onPress={() => { }}
+                        >
+                            <View style={styles.gmpCardLeft}>
+                                <View style={[styles.gmpIconBox, { backgroundColor: theme.colors.surfaceLight }]}>
+                                    <Text style={[styles.gmpIconText, { color: theme.colors.text }]}>{item.name.charAt(0)}</Text>
                                 </View>
-                            )}
-                            {item.price === 'main' && <View style={styles.mainTag}><Text style={styles.smeTagText}>MAIN</Text></View>}
-                        </View>
-                        
-                        <View style={styles.divider} />
-                        
-                        <View style={styles.listFooter}>
-                            <View>
-                                <Text style={styles.listFooterLabel}>OFFER PRICE</Text>
-                                <Text style={styles.listFooterValue}>{item.price}</Text>
+                                <View>
+                                    <Text style={[styles.gmpCompanyName, { color: theme.colors.text }]}>{item.name}</Text>
+                                    <Text style={[styles.ipoDate, { color: theme.colors.textSecondary }]}>{item.range}</Text>
+                                </View>
                             </View>
-                            <View style={{alignItems: 'flex-end'}}>
-                                <Text style={styles.listFooterLabel}>GMP INDICATOR</Text>
-                                <Text style={[styles.listFooterValue, {color: theme.colors.success}]}>↑ {item.gmp}</Text>
+                            <View style={styles.gmpCardRight}>
+                                <Text style={[styles.gmpDiff, { color: theme.colors.success }]}>+{item.gmp}</Text>
+                                <View style={[styles.statusPill, { backgroundColor: theme.colors.surfaceLight }]}>
+                                    <Text style={[styles.statusPillText, { color: theme.colors.textSecondary }]}>{item.status}</Text>
+                                </View>
                             </View>
-                        </View>
-                    </TouchableOpacity>
-                ))}
+                        </TouchableOpacity>
+                    ))}
+                </View>
 
+                {/* Trending GMP */}
+                <View style={[styles.sectionHeader, { marginTop: theme.spacing.xl }]}>
+                    <View style={styles.sectionTitleRow}>
+                        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Trending GMP</Text>
+                        <Text style={{ fontSize: 20 }}> 🔥</Text>
+                    </View>
+                </View>
             </ScrollView>
-
-            <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('GMP')}>
-                 <Ionicons name="filter" size={24} color={theme.colors.background} />
-            </TouchableOpacity>
         </SafeAreaView>
     );
 }
 
-
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background },
-    scrollContent: { padding: theme.spacing.md, paddingBottom: 80 },
+    container: {
+        flex: 1,
+        backgroundColor: defaultTheme.colors.background,
+    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: theme.spacing.md,
-        paddingVertical: theme.spacing.sm,
+        paddingHorizontal: defaultTheme.spacing.md,
+        paddingVertical: defaultTheme.spacing.sm,
+        borderBottomWidth: 1, // Added for mobile header separation
+        borderBottomColor: 'transparent',
     },
     headerLeft: {
         flexDirection: 'row',
@@ -270,21 +203,21 @@ const styles = StyleSheet.create({
     avatar: {
         width: 40,
         height: 40,
-        borderRadius: 12,
-        backgroundColor: theme.colors.surfaceLight,
+        borderRadius: 20,
+        backgroundColor: defaultTheme.colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
     },
     welcomeText: {
-        fontSize: 10,
-        color: theme.colors.secondary, // Actually primary or accent color in design usually
-        fontWeight: 'bold',
-        color: theme.colors.primary
+        fontSize: 12,
+        color: defaultTheme.colors.textSecondary,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     userName: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     headerRight: {
         flexDirection: 'row',
@@ -294,9 +227,10 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
+        position: 'relative',
     },
     badge: {
         position: 'absolute',
@@ -305,56 +239,68 @@ const styles = StyleSheet.create({
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: theme.colors.success,
+        backgroundColor: defaultTheme.colors.error,
         borderWidth: 1,
-        borderColor: theme.colors.background
+        borderColor: defaultTheme.colors.surface,
+    },
+    scrollContent: {
+        paddingBottom: 100,
     },
     tickerContainer: {
         flexDirection: 'row',
-        gap: 12,
-        marginTop: theme.spacing.md,
+        backgroundColor: defaultTheme.colors.surface,
+        margin: 20,
+        padding: 16,
+        borderRadius: 16,
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     tickerCard: {
         flex: 1,
-        backgroundColor: theme.colors.surfaceLight,
-        padding: 12,
-        borderRadius: 12,
+    },
+    dividerVertical: {
+        width: 1,
+        height: 40,
+        backgroundColor: defaultTheme.colors.border,
+        marginHorizontal: 16,
     },
     tickerLabel: {
-        color: theme.colors.textSecondary,
         fontSize: 12,
+        color: defaultTheme.colors.textSecondary,
         marginBottom: 4,
+        fontWeight: '600',
     },
     tickerValueRow: {
         flexDirection: 'row',
         alignItems: 'baseline',
-        justifyContent: 'space-between',
+        gap: 8,
     },
     tickerValue: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     tickerChangePositive: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
+        gap: 2,
     },
     tickerChangeText: {
-        color: theme.colors.success,
         fontSize: 12,
-        fontWeight: 'bold',
-        marginLeft: 2,
+        color: defaultTheme.colors.success,
+        fontWeight: '600',
+    },
+    section: {
+        marginTop: defaultTheme.spacing.lg,
+        paddingHorizontal: 20,
     },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: theme.spacing.xl,
-        marginBottom: theme.spacing.md,
+        paddingHorizontal: 20,
+        marginBottom: 16,
+        marginTop: defaultTheme.spacing.md,
     },
     sectionTitleRow: {
         flexDirection: 'row',
@@ -362,290 +308,150 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     statusDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: theme.colors.success,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: defaultTheme.colors.primary,
     },
     sectionTitle: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     viewAll: {
-        color: theme.colors.success,
         fontSize: 14,
+        color: defaultTheme.colors.primary,
         fontWeight: '600',
     },
-    horizontalScroll: {
-        marginLeft: -theme.spacing.md,
-        paddingHorizontal: theme.spacing.md,
-    },
-    subscriptionCard: {
-        width: width * 0.75,
-        backgroundColor: theme.colors.surfaceLight,
-        borderRadius: 16,
-        padding: theme.spacing.md,
-        marginRight: theme.spacing.md,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-    },
-    subCardHeader: {
-        flexDirection: 'row',
-        marginBottom: theme.spacing.md,
-        gap: 12,
-    },
-    logoPlaceholder: {
-        width: 48,
-        height: 48,
-        borderRadius: 8,
-        backgroundColor: '#2D3748',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    endsInBadge: {
-        backgroundColor: '#7f1d1d',
-        alignSelf: 'flex-start',
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
-        marginBottom: 4,
-    },
-    endsInText: {
-        color: '#fca5a5',
-        fontSize: 10,
-        fontWeight: 'bold',
-    },
-    companyName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: theme.colors.text,
-    },
-    tag: {
-        backgroundColor: theme.colors.surface,
-        alignSelf: 'flex-start',
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
-        marginTop: 4,
-    },
-    tagText: {
-        color: theme.colors.textSecondary,
-        fontSize: 10,
-    },
-    subStatsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: theme.spacing.sm,
-        marginBottom: theme.spacing.lg,
-    },
-    statLabel: {
-        color: theme.colors.textSecondary,
-        fontSize: 10,
-        marginBottom: 2,
-    },
-    statValue: {
-        color: theme.colors.text,
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    progressBarBg: {
-        height: 6,
-        backgroundColor: theme.colors.surface,
-        borderRadius: 3,
-        marginBottom: theme.spacing.lg,
-    },
-    progressBarFill: {
-        height: '100%',
-        backgroundColor: theme.colors.primary,
-        borderRadius: 3,
-    },
-    applyButton: {
-        backgroundColor: theme.colors.primary,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 12,
-        borderRadius: 8,
-        gap: 8,
-    },
-    applyButtonText: {
-        color: theme.colors.background,
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-    gmpGrid: {
-        flexDirection: 'row',
-        gap: theme.spacing.md,
-    },
-    gmpHeroCard: {
-        flex: 1,
-        backgroundColor: theme.colors.surfaceLight,
-        borderRadius: 16,
-        padding: theme.spacing.md,
-        justifyContent: 'space-between',
-        borderWidth: 1,
-        borderColor: 'rgba(52, 211, 153, 0.2)',
-    },
-    topGainerText: {
-        color: theme.colors.primary,
-        fontSize: 12,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    gmpHeroName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: theme.colors.text,
-        marginBottom: 4,
-    },
-    gmpHeroValue: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: theme.colors.success,
-        marginVertical: 8,
-    },
-    gmpHeroExp: {
-        color: theme.colors.textSecondary,
-        fontSize: 12,
-    },
-    gmpSideColumn: {
-        flex: 1,
-        gap: theme.spacing.md,
-    },
-    gmpSmallCard: {
-        flex: 1,
-        backgroundColor: theme.colors.surfaceLight,
-        borderRadius: 16,
-        padding: theme.spacing.md,
-        justifyContent: 'center',
-    },
-    gmpSmallName: {
+    seeAllText: {
         fontSize: 14,
-        fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.primary,
+        fontWeight: '600',
     },
-    gmpSmallLabel: {
-        color: theme.colors.textSecondary,
-        fontSize: 10,
-        marginTop: 2,
-    },
-    gmpSmallValue: {
-        position: 'absolute',
-        right: 12,
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    filterRow: {
-        flexDirection: 'row',
-        marginTop: theme.spacing.xl,
-        marginBottom: theme.spacing.md,
-        gap: 12,
-    },
-    filterChip: {
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        backgroundColor: theme.colors.surfaceLight,
-        borderRadius: 20,
-    },
-    activeFilterChip: {
-        backgroundColor: theme.colors.surfaceLight, // Usually darker or highlighted, but design shows minimal
-        borderWidth: 1,
-        borderColor: theme.colors.textSecondary
-    },
-    filterText: {
-        color: theme.colors.textSecondary,
-    },
-    activeFilterText: {
-        color: theme.colors.text,
-        fontWeight: 'bold'
-    },
-    listCard: {
-        backgroundColor: theme.colors.surfaceLight,
+    // New Styles for Cards
+    trendingCard: {
+        width: 280,
         borderRadius: 16,
-        padding: theme.spacing.md,
-        marginBottom: theme.spacing.md,
+        padding: 16,
+        marginRight: 16,
+        backgroundColor: defaultTheme.colors.surface,
     },
-    listHeader: {
+    cardHeader: {
         flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 12,
     },
-    listLogo: {
+    companyLogo: {
         width: 48,
         height: 48,
         borderRadius: 8,
         backgroundColor: '#fff',
-        justifyContent: 'center',
-        alignItems: 'center',
     },
-    listLogoText: {
-        color: theme.colors.background,
-        fontWeight: 'bold',
+    statusBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+        backgroundColor: defaultTheme.colors.primary + '20',
     },
-    listInfo: {
-        flex: 1,
-    },
-    listName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: theme.colors.text,
-        marginBottom: 2,
-    },
-    listStatus: {
+    statusText: {
         fontSize: 12,
-        color: theme.colors.textSecondary,
-    },
-    smeTag: {
-        backgroundColor: '#92400e',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
-    },
-    mainTag: {
-        backgroundColor: '#064e3b',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
-    },
-    smeTagText: {
-        color: '#fcd34d',
-        fontSize: 10,
         fontWeight: 'bold',
+        color: defaultTheme.colors.primary,
     },
-    divider: {
-        height: 1,
-        backgroundColor: theme.colors.border,
-        marginVertical: 12,
+    companyName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 4,
+        color: defaultTheme.colors.text,
     },
-    listFooter: {
+    companyType: {
+        fontSize: 14,
+        marginBottom: 12,
+        color: defaultTheme.colors.textSecondary,
+    },
+    subscriptionInfo: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
     },
-    listFooterLabel: {
-        fontSize: 10,
-        color: theme.colors.textSecondary,
-        marginBottom: 2,
+    subLabel: {
+        fontSize: 12,
+        color: defaultTheme.colors.textSecondary,
     },
-    listFooterValue: {
+    subValue: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
-    floatingButton: {
-        position: 'absolute',
-        bottom: 20,
-        right: 20,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: theme.colors.primary,
+    progressBarBg: {
+        height: 6,
+        backgroundColor: defaultTheme.colors.border,
+        borderRadius: 3,
+        overflow: 'hidden',
+    },
+    progressBarFill: {
+        height: '100%',
+        backgroundColor: defaultTheme.colors.primary,
+        borderRadius: 3,
+    },
+    // GMP Card Styles
+    gmpCard: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 12,
+        borderRadius: 12,
+        marginBottom: 12,
+        backgroundColor: defaultTheme.colors.surface,
+    },
+    gmpCardLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    gmpIconBox: {
+        width: 40,
+        height: 40,
+        borderRadius: 10,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: theme.colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
-    }
+    },
+    gmpIconText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: defaultTheme.colors.text,
+    },
+    gmpCompanyName: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 2,
+        color: defaultTheme.colors.text,
+    },
+    ipoDate: {
+        fontSize: 12,
+        color: defaultTheme.colors.textSecondary,
+    },
+    gmpCardRight: {
+        alignItems: 'flex-end',
+    },
+    gmpDiff: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 4,
+        color: defaultTheme.colors.success,
+    },
+    statusPill: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 8,
+        backgroundColor: defaultTheme.colors.surfaceLight,
+    },
+    statusPillText: {
+        fontSize: 10,
+        fontWeight: '600',
+        color: defaultTheme.colors.textSecondary,
+    },
 });

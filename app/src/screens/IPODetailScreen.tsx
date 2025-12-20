@@ -1,13 +1,13 @@
-import React, { useLayoutEffect } from 'react';
+import React, { useLayoutEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { theme as defaultTheme } from '../theme';
 
 const { width } = Dimensions.get('window');
 
-// Mock data to supplement route params for the UI demo
-const MOCK_DETAILS = {
+// Helper to generate mock data based on theme
+const getMockDetails = (theme) => ({
     biddingEnds: '2 days',
     currentGmp: '₹55',
     gmpChange: '+45%',
@@ -18,7 +18,7 @@ const MOCK_DETAILS = {
     subscription: {
         retail: { value: '12.5x', label: 'Retail', color: theme.colors.primary },
         nii: { value: '4.2x', label: 'Non-Institutional (NII)', color: theme.colors.accent },
-        qib: { value: '0.8x', label: 'QIB', color: theme.colors.gold },
+        qib: { value: '0.8x', label: 'QIB', color: theme.colors.gold || '#FFD700' }, // Fallback if gold not in theme
     },
     timeline: [
         { title: 'Offer Opens', date: '14 Jul, 2021', icon: 'calendar-outline', active: true },
@@ -32,35 +32,39 @@ const MOCK_DETAILS = {
         { year: '2021', value: 3.1, height: 140, active: true },
     ],
     about: "Zomato is an Indian multinational restaurant aggregator and food delivery company. It provides information, menus and user-reviews of restaurants as well as food delivery options from partner restaurants in select cities."
-};
+});
 
 export default function IPODetailScreen({ navigation, route }) {
     const { ipo } = route.params || {};
     const companyName = ipo?.name || 'Zomato Ltd';
     const tag = ipo?.type || 'Mainboard IPO';
+    const { theme } = useTheme();
+
+    const MOCK_DETAILS = useMemo(() => getMockDetails(theme), [theme]);
 
     useLayoutEffect(() => {
         navigation.setOptions({
             title: companyName + ' IPO',
+            headerStyle: { backgroundColor: theme.colors.background },
+            headerTintColor: theme.colors.text,
             headerRight: () => (
                 <TouchableOpacity style={{ marginRight: 16 }}>
                     <Ionicons name="star-outline" size={24} color={theme.colors.text} />
                 </TouchableOpacity>
             ),
         });
-    }, [navigation, companyName]);
+    }, [navigation, companyName, theme]);
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={{paddingBottom: 40}}>
+        <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={{ paddingBottom: 40 }}>
             {/* Top Card */}
-            <View style={styles.topCard}>
-                <View style={styles.logoContainer}>
-                    <Text style={styles.logoText}>{companyName.substring(0, 1)}</Text>
-                    {/* <Image source={{uri: ...}} style={styles.logo} /> */}
+            <View style={[styles.topCard, { backgroundColor: theme.colors.surfaceLight }]}>
+                <View style={[styles.logoContainer, { backgroundColor: theme.colors.background }]}>
+                    <Text style={[styles.logoText, { color: theme.colors.primary }]}>{companyName.substring(0, 1)}</Text>
                 </View>
                 <View style={styles.headerInfo}>
-                    <Text style={styles.companyTitle}>{companyName}</Text>
-                    <Text style={styles.companySubtitle}>{tag} • NSE & BSE</Text>
+                    <Text style={[styles.companyTitle, { color: theme.colors.text }]}>{companyName}</Text>
+                    <Text style={[styles.companySubtitle, { color: theme.colors.textSecondary }]}>{tag} • NSE & BSE</Text>
                     <View style={styles.timerBadge}>
                         <Ionicons name="time" size={12} color="#F59E0B" />
                         <Text style={styles.timerText}>Bidding Ends in {MOCK_DETAILS.biddingEnds}</Text>
@@ -72,11 +76,11 @@ export default function IPODetailScreen({ navigation, route }) {
             </View>
 
             {/* Current GMP Card */}
-            <View style={styles.gmpCard}>
+            <View style={[styles.gmpCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                 <View>
-                    <Text style={styles.cardLabel}>CURRENT GMP</Text>
+                    <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>CURRENT GMP</Text>
                     <View style={styles.gmpRow}>
-                        <Text style={styles.gmpValue}>{MOCK_DETAILS.currentGmp}</Text>
+                        <Text style={[styles.gmpValue, { color: theme.colors.text }]}>{MOCK_DETAILS.currentGmp}</Text>
                         <View style={styles.gmpChangeBadge}>
                             <Ionicons name="trending-up" size={12} color={theme.colors.success} />
                             <Text style={styles.gmpChangeText}>{MOCK_DETAILS.gmpChange}</Text>
@@ -85,102 +89,106 @@ export default function IPODetailScreen({ navigation, route }) {
                 </View>
                 {/* Simple Bar Chart Visualization */}
                 <View style={styles.gmpChart}>
-                    <View style={[styles.bar, {height: 10}]} />
-                    <View style={[styles.bar, {height: 15}]} />
-                    <View style={[styles.bar, {height: 12}]} />
-                    <View style={[styles.bar, {height: 20}]} />
-                    <View style={[styles.bar, {height: 25, backgroundColor: theme.colors.primary}]} />
+                    <View style={[styles.bar, { height: 10 }]} />
+                    <View style={[styles.bar, { height: 15 }]} />
+                    <View style={[styles.bar, { height: 12 }]} />
+                    <View style={[styles.bar, { height: 20 }]} />
+                    <View style={[styles.bar, { height: 25, backgroundColor: theme.colors.primary }]} />
                 </View>
             </View>
 
-            <Text style={styles.sectionHeader}>Issue Details</Text>
+            <Text style={[styles.sectionHeader, { color: theme.colors.text }]}>Issue Details</Text>
             <View style={styles.grid}>
-                <View style={[styles.detailCard, {marginRight: 8}]}>
+                <View style={[styles.detailCard, { marginRight: 8, backgroundColor: theme.colors.surfaceLight }]}>
                     <Ionicons name="cash-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
-                    <Text style={styles.detailLabel}>PRICE BAND</Text>
-                    <Text style={styles.detailValue}>{MOCK_DETAILS.priceBand}</Text>
+                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>PRICE BAND</Text>
+                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{MOCK_DETAILS.priceBand}</Text>
                 </View>
-                <View style={[styles.detailCard, {marginLeft: 8}]}>
+                <View style={[styles.detailCard, { marginLeft: 8, backgroundColor: theme.colors.surfaceLight }]}>
                     <Ionicons name="cube-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
-                    <Text style={styles.detailLabel}>LOT SIZE</Text>
-                    <Text style={styles.detailValue}>{MOCK_DETAILS.lotSize}</Text>
+                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>LOT SIZE</Text>
+                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{MOCK_DETAILS.lotSize}</Text>
                 </View>
             </View>
-            <View style={[styles.grid, {marginTop: 16}]}>
-                <View style={[styles.detailCard, {marginRight: 8}]}>
+            <View style={[styles.grid, { marginTop: 16 }]}>
+                <View style={[styles.detailCard, { marginRight: 8, backgroundColor: theme.colors.surfaceLight }]}>
                     <Ionicons name="wallet-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
-                    <Text style={styles.detailLabel}>MIN INVESTMENT</Text>
-                    <Text style={styles.detailValue}>{MOCK_DETAILS.minInvest}</Text>
+                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>MIN INVESTMENT</Text>
+                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{MOCK_DETAILS.minInvest}</Text>
                 </View>
-                <View style={[styles.detailCard, {marginLeft: 8}]}>
+                <View style={[styles.detailCard, { marginLeft: 8, backgroundColor: theme.colors.surfaceLight }]}>
                     <Ionicons name="pie-chart-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
-                    <Text style={styles.detailLabel}>ISSUE SIZE</Text>
-                    <Text style={styles.detailValue}>{MOCK_DETAILS.issueSize}</Text>
+                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>ISSUE SIZE</Text>
+                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{MOCK_DETAILS.issueSize}</Text>
                 </View>
             </View>
 
-            <View style={[styles.sectionHeaderRow, {marginTop: 24}]}>
-                <Text style={styles.sectionHeader}>Subscription Status</Text>
-                <View style={styles.liveBadge}>
-                    <Text style={styles.liveText}>Live: 2:30 PM</Text>
+            <View style={[styles.sectionHeaderRow, { marginTop: 24 }]}>
+                <Text style={[styles.sectionHeader, { color: theme.colors.text }]}>Subscription Status</Text>
+                <View style={[styles.liveBadge, { backgroundColor: theme.colors.surface }]}>
+                    <Text style={[styles.liveText, { color: theme.colors.textSecondary }]}>Live: 2:30 PM</Text>
                 </View>
             </View>
 
-            <View style={styles.subscriptionContainer}>
+            <View style={[styles.subscriptionContainer, { backgroundColor: theme.colors.surfaceLight }]}>
                 {Object.values(MOCK_DETAILS.subscription).map((item, index) => (
                     <View key={index} style={styles.subRow}>
                         <View style={styles.subHeader}>
-                            <Text style={styles.subLabel}>{item.label}</Text>
-                            <Text style={styles.subValue}>{item.value} <Text style={{fontSize: 10, color: theme.colors.textSecondary}}>Subscribed</Text></Text>
+                            <Text style={[styles.subLabel, { color: theme.colors.text }]}>{item.label}</Text>
+                            <Text style={[styles.subValue, { color: theme.colors.success }]}>{item.value} <Text style={{ fontSize: 10, color: theme.colors.textSecondary }}>Subscribed</Text></Text>
                         </View>
-                        <View style={styles.subProgressBg}>
-                            <View style={[styles.subProgressFill, {width: '60%', backgroundColor: item.color}]} />
+                        <View style={[styles.subProgressBg, { backgroundColor: theme.colors.background }]}>
+                            <View style={[styles.subProgressFill, { width: '60%', backgroundColor: item.color }]} />
                         </View>
-                        {index === 0 && <Text style={styles.chanceText}>Chance of allotment: Low</Text>}
+                        {index === 0 && <Text style={[styles.chanceText, { color: theme.colors.textSecondary }]}>Chance of allotment: Low</Text>}
                     </View>
                 ))}
             </View>
 
-            <Text style={[styles.sectionHeader, {marginTop: 24}]}>Timeline</Text>
-            <View style={styles.timelineContainer}>
+            <Text style={[styles.sectionHeader, { marginTop: 24, color: theme.colors.text }]}>Timeline</Text>
+            <View style={[styles.timelineContainer, { backgroundColor: theme.colors.surfaceLight }]}>
                 {MOCK_DETAILS.timeline.map((item, index) => (
                     <View key={index} style={styles.timelineItem}>
                         <View style={styles.timelineLeft}>
-                            <View style={[styles.timelineIconBox, item.active && styles.timelineIconBoxActive]}>
-                                <Ionicons name={item.icon} size={20} color={item.active ? theme.colors.background : theme.colors.textSecondary} />
+                            <View style={[
+                                styles.timelineIconBox,
+                                { backgroundColor: theme.colors.surface, borderColor: theme.colors.textSecondary },
+                                item.active && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }
+                            ]}>
+                                <Ionicons name={item.icon as any} size={20} color={item.active ? theme.colors.background : theme.colors.textSecondary} />
                             </View>
-                            {index < MOCK_DETAILS.timeline.length - 1 && <View style={styles.timelineLine} />}
+                            {index < MOCK_DETAILS.timeline.length - 1 && <View style={[styles.timelineLine, { backgroundColor: theme.colors.textSecondary }]} />}
                         </View>
                         <View style={styles.timelineContent}>
-                            <Text style={styles.timelineTitle}>{item.title}</Text>
-                            <Text style={styles.timelineDate}>{item.date}</Text>
+                            <Text style={[styles.timelineTitle, { color: theme.colors.text }]}>{item.title}</Text>
+                            <Text style={[styles.timelineDate, { color: theme.colors.textSecondary }]}>{item.date}</Text>
                         </View>
                     </View>
                 ))}
             </View>
 
-            <Text style={[styles.sectionHeader, {marginTop: 24}]}>Financials (Cr)</Text>
-            <View style={styles.financialsCard}>
+            <Text style={[styles.sectionHeader, { marginTop: 24, color: theme.colors.text }]}>Financials (Cr)</Text>
+            <View style={[styles.financialsCard, { backgroundColor: theme.colors.surfaceLight }]}>
                 <View style={styles.chartContainer}>
                     {MOCK_DETAILS.financials.map((item, index) => (
-                         <View key={index} style={styles.chartCol}>
-                            <Text style={styles.chartYear}>{item.year}</Text>
-                            <View style={[styles.chartBar, {height: item.height, backgroundColor: item.active ? theme.colors.primary : '#4B5563'}]} />
-                            <Text style={styles.chartValue}>₹{item.value}k</Text>
-                         </View>
+                        <View key={index} style={styles.chartCol}>
+                            <Text style={[styles.chartYear, { color: theme.colors.textSecondary }]}>{item.year}</Text>
+                            <View style={[styles.chartBar, { height: item.height, backgroundColor: item.active ? theme.colors.primary : '#4B5563' }]} />
+                            <Text style={[styles.chartValue, { color: theme.colors.text }]}>₹{item.value}k</Text>
+                        </View>
                     ))}
                 </View>
-                <TouchableOpacity style={styles.financialsLink}>
-                    <Text style={styles.financialsLinkText}>View Detailed Financials</Text>
+                <TouchableOpacity style={[styles.financialsLink, { borderTopColor: theme.colors.border }]}>
+                    <Text style={[styles.financialsLinkText, { color: theme.colors.primary }]}>View Detailed Financials</Text>
                     <Ionicons name="chevron-forward" size={16} color={theme.colors.primary} />
                 </TouchableOpacity>
             </View>
 
-            <Text style={[styles.sectionHeader, {marginTop: 24}]}>About {companyName}</Text>
-            <View style={styles.aboutCard}>
-                <Text style={styles.aboutText}>{MOCK_DETAILS.about}</Text>
+            <Text style={[styles.sectionHeader, { marginTop: 24, color: theme.colors.text }]}>About {companyName}</Text>
+            <View style={[styles.aboutCard, { backgroundColor: theme.colors.surfaceLight }]}>
+                <Text style={[styles.aboutText, { color: theme.colors.textSecondary }]}>{MOCK_DETAILS.about}</Text>
                 <TouchableOpacity>
-                    <Text style={styles.readMore}>Read More</Text>
+                    <Text style={[styles.readMore, { color: theme.colors.primary }]}>Read More</Text>
                 </TouchableOpacity>
             </View>
 
@@ -189,10 +197,10 @@ export default function IPODetailScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background, padding: theme.spacing.md },
+    container: { flex: 1, backgroundColor: defaultTheme.colors.background, padding: defaultTheme.spacing.md },
     topCard: {
         flexDirection: 'row',
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         borderRadius: 12,
         padding: 16,
         alignItems: 'center',
@@ -210,7 +218,7 @@ const styles = StyleSheet.create({
     logoText: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: theme.colors.primary,
+        color: defaultTheme.colors.primary,
     },
     headerInfo: {
         flex: 1,
@@ -218,11 +226,11 @@ const styles = StyleSheet.create({
     companyTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     companySubtitle: {
         fontSize: 12,
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         marginVertical: 4,
     },
     timerBadge: {
@@ -245,7 +253,7 @@ const styles = StyleSheet.create({
         right: 16,
     },
     statusText: {
-        color: theme.colors.success,
+        color: defaultTheme.colors.success,
         fontSize: 10,
         fontWeight: 'bold',
     },
@@ -253,15 +261,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: theme.colors.surface, // Slightly darker
+        backgroundColor: defaultTheme.colors.surface,
         borderRadius: 12,
         padding: 16,
         marginBottom: 24,
         borderWidth: 1,
-        borderColor: theme.colors.border,
+        borderColor: defaultTheme.colors.border,
     },
     cardLabel: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontSize: 10,
         marginBottom: 4,
     },
@@ -273,7 +281,7 @@ const styles = StyleSheet.create({
     gmpValue: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     gmpChangeBadge: {
         flexDirection: 'row',
@@ -284,7 +292,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     gmpChangeText: {
-        color: theme.colors.success,
+        color: defaultTheme.colors.success,
         fontSize: 12,
         fontWeight: 'bold',
         marginLeft: 4,
@@ -303,7 +311,7 @@ const styles = StyleSheet.create({
     sectionHeader: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
         marginBottom: 12,
     },
     sectionHeaderRow: {
@@ -319,7 +327,7 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
     liveText: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontSize: 10,
     },
     grid: {
@@ -327,7 +335,7 @@ const styles = StyleSheet.create({
     },
     detailCard: {
         flex: 1,
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         borderRadius: 12,
         padding: 12,
     },
@@ -336,16 +344,16 @@ const styles = StyleSheet.create({
     },
     detailLabel: {
         fontSize: 10,
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         marginBottom: 4,
     },
     detailValue: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     subscriptionContainer: {
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         borderRadius: 12,
         padding: 16,
     },
@@ -358,17 +366,17 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     subLabel: {
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
         fontSize: 14,
         fontWeight: '600',
     },
     subValue: {
-        color: theme.colors.success,
+        color: defaultTheme.colors.success,
         fontWeight: 'bold',
     },
     subProgressBg: {
         height: 6,
-        backgroundColor: theme.colors.background,
+        backgroundColor: defaultTheme.colors.background,
         borderRadius: 3,
     },
     subProgressFill: {
@@ -376,12 +384,12 @@ const styles = StyleSheet.create({
         borderRadius: 3,
     },
     chanceText: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontSize: 10,
         marginTop: 4,
     },
     timelineContainer: {
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         borderRadius: 12,
         padding: 16,
     },
@@ -399,37 +407,37 @@ const styles = StyleSheet.create({
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: defaultTheme.colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: theme.colors.textSecondary,
-        zIndex: 1, 
+        borderColor: defaultTheme.colors.textSecondary,
+        zIndex: 1,
     },
     timelineIconBoxActive: {
-        backgroundColor: theme.colors.primary,
-        borderColor: theme.colors.primary,
+        backgroundColor: defaultTheme.colors.primary,
+        borderColor: defaultTheme.colors.primary,
     },
     timelineLine: {
         flex: 1,
         width: 1,
-        backgroundColor: theme.colors.textSecondary,
+        backgroundColor: defaultTheme.colors.textSecondary,
     },
     timelineContent: {
         paddingTop: 8,
     },
     timelineTitle: {
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
         fontWeight: 'bold',
         fontSize: 16,
     },
     timelineDate: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontSize: 12,
         marginTop: 2,
     },
     financialsCard: {
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         borderRadius: 12,
         padding: 16,
     },
@@ -445,7 +453,7 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     chartYear: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontSize: 12,
     },
     chartBar: {
@@ -453,7 +461,7 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
     chartValue: {
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
         fontWeight: 'bold',
         fontSize: 12,
     },
@@ -462,25 +470,25 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderTopWidth: 1,
-        borderTopColor: theme.colors.border,
+        borderTopColor: defaultTheme.colors.border,
         paddingTop: 12,
     },
     financialsLinkText: {
-        color: theme.colors.primary,
+        color: defaultTheme.colors.primary,
         fontWeight: 'bold',
         marginRight: 4,
     },
     aboutCard: {
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         borderRadius: 12,
         padding: 16,
     },
     aboutText: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         lineHeight: 20,
     },
     readMore: {
-        color: theme.colors.primary,
+        color: defaultTheme.colors.primary,
         fontWeight: 'bold',
         marginTop: 8,
     }

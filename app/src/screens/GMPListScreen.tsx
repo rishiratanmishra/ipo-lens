@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { theme as defaultTheme } from '../theme';
 
 const MOCK_GMP_LIST = [
     {
@@ -10,7 +11,7 @@ const MOCK_GMP_LIST = [
         name: 'Inox India Ltd',
         priceRange: '₹627 - 660',
         status: 'Bidding Open',
-        statusColor: theme.colors.success,
+        statusType: 'success',
         gmp: '₹450',
         gmpChange: '71.77%',
         estListing: '₹1,110',
@@ -21,7 +22,7 @@ const MOCK_GMP_LIST = [
         name: 'Motisons Jewellers',
         priceRange: '₹52 - 55',
         status: 'Allotment Out',
-        statusColor: theme.colors.accent,
+        statusType: 'accent',
         gmp: '₹109',
         gmpChange: '198.18%',
         estListing: '₹164',
@@ -32,7 +33,7 @@ const MOCK_GMP_LIST = [
         name: 'Muthoot Microfin',
         priceRange: '₹277 - 291',
         status: 'Closed',
-        statusColor: theme.colors.error,
+        statusType: 'error',
         gmp: '₹35',
         gmpChange: '12.03%',
         estListing: '₹326',
@@ -43,7 +44,7 @@ const MOCK_GMP_LIST = [
         name: 'Suraj Estate Dev',
         priceRange: '₹340 - 360',
         status: 'Closed',
-        statusColor: theme.colors.error,
+        statusType: 'error',
         gmp: '₹20',
         gmpChange: '5.56%',
         estListing: '₹380',
@@ -52,84 +53,101 @@ const MOCK_GMP_LIST = [
 ];
 
 export default function GMPListScreen({ navigation }) {
+    const { theme } = useTheme();
     const [activeTab, setActiveTab] = useState('Mainboard');
 
+    const getStatusColor = (type) => {
+        // @ts-ignore - Assuming colors exist on theme
+        return theme.colors[type] || theme.colors.text;
+    };
+
     const renderItem = ({ item }) => (
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('IPODetail', { ipo: item })}>
+        <TouchableOpacity
+            style={[styles.card, { backgroundColor: theme.colors.surfaceLight }]}
+            onPress={() => navigation.navigate('IPODetail', { ipo: item })}
+        >
             <View style={styles.cardLeft}>
-                <View style={styles.logoPlaceholder}>
-                     <Text style={styles.logoText}>{item.name.substring(0, 1)}</Text>
+                <View style={[styles.logoPlaceholder, { backgroundColor: theme.colors.surface }]}>
+                    <Text style={[styles.logoText, { color: theme.colors.text }]}>{item.name.substring(0, 1)}</Text>
                 </View>
                 <View>
-                    <Text style={styles.companyName}>{item.name}</Text>
-                    <Text style={styles.priceRange}>{item.priceRange}</Text>
-                    <Text style={[styles.statusText, {color: item.statusColor}]}>● {item.status}</Text>
+                    <Text style={[styles.companyName, { color: theme.colors.text }]}>{item.name}</Text>
+                    <Text style={[styles.priceRange, { color: theme.colors.textSecondary }]}>{item.priceRange}</Text>
+                    <Text style={[styles.statusText, { color: getStatusColor(item.statusType) }]}>● {item.status}</Text>
                 </View>
             </View>
             <View style={styles.cardRight}>
                 <View style={styles.gmpRow}>
                     {item.fire && <Text>🔥</Text>}
-                    <Text style={styles.gmpValue}>{item.gmp}</Text>
+                    <Text style={[styles.gmpValue, { color: theme.colors.success }]}>{item.gmp}</Text>
                 </View>
-                <Text style={styles.gmpChange}>{item.gmpChange}</Text>
-                <Text style={styles.estListing}>Est: {item.estListing}</Text>
+                <Text style={[styles.gmpChange, { color: theme.colors.success }]}>{item.gmpChange}</Text>
+                <Text style={[styles.estListing, { color: theme.colors.textSecondary }]}>Est: {item.estListing}</Text>
             </View>
         </TouchableOpacity>
     );
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>GMP Trends</Text>
+                <Text style={[styles.headerTitle, { color: theme.colors.text }]}>GMP Trends</Text>
                 <View style={styles.headerRight}>
-                     <View style={styles.updateBadge}>
+                    <View style={[styles.updateBadge, { backgroundColor: theme.colors.surfaceLight }]}>
                         <Ionicons name="time-outline" size={12} color={theme.colors.textSecondary} />
-                        <Text style={styles.updateText}>10m ago</Text>
-                     </View>
-                     <TouchableOpacity style={styles.iconButton}>
+                        <Text style={[styles.updateText, { color: theme.colors.textSecondary }]}>10m ago</Text>
+                    </View>
+                    <TouchableOpacity style={styles.iconButton}>
                         <Ionicons name="search" size={20} color={theme.colors.text} />
-                     </TouchableOpacity>
-                     
+                    </TouchableOpacity>
+
                 </View>
             </View>
 
             {/* Tabs */}
             <View style={styles.tabContainer}>
-                <TouchableOpacity 
-                    style={[styles.tab, activeTab === 'Mainboard' && styles.activeTab]}
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'Mainboard' && { borderBottomColor: theme.colors.primary }]}
                     onPress={() => setActiveTab('Mainboard')}
                 >
-                    <Text style={[styles.tabText, activeTab === 'Mainboard' && styles.activeTabText]}>Mainboard</Text>
+                    <Text style={[
+                        styles.tabText,
+                        { color: theme.colors.textSecondary },
+                        activeTab === 'Mainboard' && { color: theme.colors.text }
+                    ]}>Mainboard</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                    style={[styles.tab, activeTab === 'SME' && styles.activeTab]}
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'SME' && { borderBottomColor: theme.colors.primary }]}
                     onPress={() => setActiveTab('SME')}
                 >
-                    <Text style={[styles.tabText, activeTab === 'SME' && styles.activeTabText]}>SME</Text>
+                    <Text style={[
+                        styles.tabText,
+                        { color: theme.colors.textSecondary },
+                        activeTab === 'SME' && { color: theme.colors.text }
+                    ]}>SME</Text>
                 </TouchableOpacity>
             </View>
 
             {/* Market Mood Hero */}
             <View style={styles.heroCard}>
                 <View>
-                    <Text style={styles.heroLabel}>MARKET MOOD</Text>
-                    <Text style={styles.heroTitle}>Bullish Sentiment</Text>
-                    <Text style={styles.heroSubtitle}>High listing gains expected</Text>
+                    <Text style={[styles.heroLabel, { color: theme.colors.success }]}>MARKET MOOD</Text>
+                    <Text style={[styles.heroTitle, { color: theme.colors.text }]}>Bullish Sentiment</Text>
+                    <Text style={[styles.heroSubtitle, { color: theme.colors.textSecondary }]}>High listing gains expected</Text>
                 </View>
-                <View style={styles.moodIcon}>
-                     <Ionicons name="trending-up" size={32} color={theme.colors.success} />
+                <View style={[styles.moodIcon, { backgroundColor: theme.colors.surfaceLight }]}>
+                    <Ionicons name="trending-up" size={32} color={theme.colors.success} />
                 </View>
             </View>
 
             <View style={styles.listHeaderRow}>
-                <Text style={styles.listHeaderTitle}>Active IPOs</Text>
+                <Text style={[styles.listHeaderTitle, { color: theme.colors.text }]}>Active IPOs</Text>
                 <TouchableOpacity>
-                     <Ionicons name="filter" size={20} color={theme.colors.textSecondary} />
+                    <Ionicons name="filter" size={20} color={theme.colors.textSecondary} />
                 </TouchableOpacity>
             </View>
 
-            <FlatList 
+            <FlatList
                 data={MOCK_GMP_LIST}
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
@@ -142,18 +160,18 @@ export default function GMPListScreen({ navigation }) {
 
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background },
+    container: { flex: 1, backgroundColor: defaultTheme.colors.background },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: theme.spacing.md,
-        paddingVertical: theme.spacing.sm,
+        paddingHorizontal: defaultTheme.spacing.md,
+        paddingVertical: defaultTheme.spacing.sm,
     },
     headerTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     headerRight: {
         flexDirection: 'row',
@@ -164,22 +182,22 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 12,
     },
     updateText: {
         fontSize: 10,
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
     },
     iconButton: {
         padding: 4,
     },
     tabContainer: {
         flexDirection: 'row',
-        paddingHorizontal: theme.spacing.md,
-        marginTop: theme.spacing.md,
+        paddingHorizontal: defaultTheme.spacing.md,
+        marginTop: defaultTheme.spacing.md,
         gap: 16,
     },
     tab: {
@@ -188,18 +206,18 @@ const styles = StyleSheet.create({
         borderBottomColor: 'transparent',
     },
     activeTab: {
-        borderBottomColor: theme.colors.primary,
+        borderBottomColor: defaultTheme.colors.primary,
     },
     tabText: {
         fontSize: 16,
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontWeight: 'bold',
     },
     activeTabText: {
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     heroCard: {
-        margin: theme.spacing.md,
+        margin: defaultTheme.spacing.md,
         padding: 20,
         backgroundColor: 'rgba(52, 211, 153, 0.1)', // Light green tint
         borderRadius: 16,
@@ -210,7 +228,7 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(52, 211, 153, 0.3)',
     },
     heroLabel: {
-        color: theme.colors.success,
+        color: defaultTheme.colors.success,
         fontSize: 10,
         fontWeight: 'bold',
         marginBottom: 4,
@@ -218,18 +236,18 @@ const styles = StyleSheet.create({
     heroTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
         marginBottom: 2,
     },
     heroSubtitle: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontSize: 12,
     },
     moodIcon: {
         width: 48,
         height: 48,
         borderRadius: 24,
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -237,23 +255,23 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: theme.spacing.md,
-        marginBottom: theme.spacing.sm,
+        paddingHorizontal: defaultTheme.spacing.md,
+        marginBottom: defaultTheme.spacing.sm,
     },
     listHeaderTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     listContent: {
-        paddingHorizontal: theme.spacing.md,
+        paddingHorizontal: defaultTheme.spacing.md,
         paddingBottom: 20,
     },
     card: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         padding: 16,
         borderRadius: 16,
         marginBottom: 12,
@@ -268,24 +286,24 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 8,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: defaultTheme.colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
     },
     logoText: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     companyName: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
         marginBottom: 2,
     },
     priceRange: {
         fontSize: 12,
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         marginBottom: 2,
     },
     statusText: {
@@ -303,15 +321,15 @@ const styles = StyleSheet.create({
     gmpValue: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: theme.colors.success,
+        color: defaultTheme.colors.success,
     },
     gmpChange: {
         fontSize: 12,
-        color: theme.colors.success,
+        color: defaultTheme.colors.success,
         marginBottom: 2,
     },
     estListing: {
         fontSize: 10,
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
     }
 });

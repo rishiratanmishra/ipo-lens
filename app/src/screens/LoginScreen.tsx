@@ -2,13 +2,15 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
-import { theme } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { theme as defaultTheme } from '../theme';
 
 export default function LoginScreen({ navigation }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const { login, isLoading } = useContext(AuthContext);
+    const { theme } = useTheme();
 
     const handleLogin = async () => {
         if (!username || !password) {
@@ -24,32 +26,32 @@ export default function LoginScreen({ navigation }) {
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
             <View style={styles.header}>
                 <View style={styles.logoContainer}>
-                    <View style={styles.logoBox}>
-                         <Ionicons name="filter-circle-outline" size={32} color={theme.colors.primary} />
+                    <View style={[styles.logoBox, { backgroundColor: theme.colors.surfaceLight, borderColor: theme.colors.border }]}>
+                        <Ionicons name="filter-circle-outline" size={32} color={theme.colors.primary} />
                     </View>
                 </View>
-                <Text style={styles.logoTitle}>IPO Lens</Text>
-                <Text style={styles.tagline}>Track the Next Big Win</Text>
+                <Text style={[styles.logoTitle, { color: theme.colors.text }]}>IPO Lens</Text>
+                <Text style={[styles.tagline, { color: theme.colors.primary }]}>Track the Next Big Win</Text>
             </View>
 
             <View style={styles.formContainer}>
-                <View style={styles.tabContainer}>
-                    <TouchableOpacity style={[styles.tab, styles.activeTab]}>
-                        <Text style={styles.activeTabText}>Log In</Text>
+                <View style={[styles.tabContainer, { backgroundColor: theme.colors.surfaceLight }]}>
+                    <TouchableOpacity style={[styles.tab, styles.activeTab, { backgroundColor: theme.colors.primary }]}>
+                        <Text style={[styles.activeTabText, { color: theme.colors.background }]}>Log In</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Register')}>
-                        <Text style={styles.inactiveTabText}>Sign Up</Text>
+                        <Text style={[styles.inactiveTabText, { color: theme.colors.textSecondary }]}>Sign Up</Text>
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.label}>Email Address</Text>
-                <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: theme.colors.text }]}>Email Address</Text>
+                <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                     <Ionicons name="mail-outline" size={20} color={theme.colors.textSecondary} style={styles.inputIcon} />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: theme.colors.text }]}
                         placeholder="investor@example.com"
                         placeholderTextColor={theme.colors.textSecondary}
                         value={username}
@@ -59,15 +61,15 @@ export default function LoginScreen({ navigation }) {
                 </View>
 
                 <View style={styles.passwordHeader}>
-                    <Text style={styles.label}>Password</Text>
+                    <Text style={[styles.label, { color: theme.colors.text }]}>Password</Text>
                     <TouchableOpacity>
-                         <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                        <Text style={[styles.forgotPassword, { color: theme.colors.primary }]}>Forgot Password?</Text>
                     </TouchableOpacity>
                 </View>
-                <View style={styles.inputContainer}>
+                <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                     <Ionicons name="lock-closed-outline" size={20} color={theme.colors.textSecondary} style={styles.inputIcon} />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: theme.colors.text }]}
                         placeholder="........"
                         placeholderTextColor={theme.colors.textSecondary}
                         value={password}
@@ -79,45 +81,23 @@ export default function LoginScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity 
-                    style={styles.button} 
-                    onPress={handleLogin} 
+                <TouchableOpacity
+                    style={[styles.button, { backgroundColor: theme.colors.primary }]}
+                    onPress={handleLogin}
                     disabled={isLoading}
                 >
                     {isLoading ? (
                         <ActivityIndicator color={theme.colors.background} />
                     ) : (
                         <View style={styles.buttonContent}>
-                            <Text style={styles.buttonText}>Log In</Text>
+                            <Text style={[styles.buttonText, { color: theme.colors.background }]}>Log In</Text>
                             <Ionicons name="arrow-forward" size={20} color={theme.colors.background} />
                         </View>
                     )}
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.faceIdButton}>
-                    <Ionicons name="happy-outline" size={24} color={theme.colors.primary} style={{marginRight: 8}} />
-                    <Text style={styles.faceIdText}>Login with Face ID</Text>
-                </TouchableOpacity>
-                
-                <View style={styles.dividerContainer}>
-                    <View style={styles.divider} />
-                    <Text style={styles.dividerText}>OR CONTINUE WITH</Text>
-                    <View style={styles.divider} />
-                </View>
-
-                <View style={styles.socialButtons}>
-                    <TouchableOpacity style={styles.socialButton}>
-                        <Ionicons name="logo-apple" size={20} color="#fff" />
-                        <Text style={styles.socialButtonText}>Apple</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.socialButton}>
-                        <Ionicons name="logo-google" size={20} color="#fff" />
-                        <Text style={styles.socialButtonText}>Google</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <Text style={styles.footerText}>
-                    By logging in, you agree to our <Text style={styles.link}>Terms of Service</Text> and <Text style={styles.link}>Privacy Policy</Text>.
+                <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
+                    By logging in, you agree to our <Text style={[styles.link, { color: theme.colors.textSecondary }]}>Terms of Service</Text> and <Text style={[styles.link, { color: theme.colors.textSecondary }]}>Privacy Policy</Text>.
                 </Text>
             </View>
         </ScrollView>
@@ -127,33 +107,33 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        backgroundColor: theme.colors.background,
-        padding: theme.spacing.lg,
+        backgroundColor: defaultTheme.colors.background,
+        padding: defaultTheme.spacing.lg,
         justifyContent: 'center',
     },
     header: {
         alignItems: 'center',
-        marginBottom: theme.spacing.xl,
+        marginBottom: defaultTheme.spacing.xl,
     },
     logoBox: {
         width: 64,
         height: 64,
         borderRadius: 16,
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: theme.spacing.md,
+        marginBottom: defaultTheme.spacing.md,
         borderWidth: 1,
-        borderColor: theme.colors.border,
+        borderColor: defaultTheme.colors.border,
     },
     logoTitle: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
     },
     tagline: {
         fontSize: 16,
-        color: theme.colors.primary,
+        color: defaultTheme.colors.primary,
         marginTop: 4,
     },
     formContainer: {
@@ -161,8 +141,8 @@ const styles = StyleSheet.create({
     },
     tabContainer: {
         flexDirection: 'row',
-        marginBottom: theme.spacing.xl,
-        backgroundColor: theme.colors.surfaceLight,
+        marginBottom: defaultTheme.spacing.xl,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         borderRadius: 12,
         padding: 4,
     },
@@ -173,19 +153,19 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     activeTab: {
-        backgroundColor: theme.colors.primary,
+        backgroundColor: defaultTheme.colors.primary,
     },
     activeTabText: {
-        color: theme.colors.background,
+        color: defaultTheme.colors.background,
         fontWeight: 'bold',
         fontSize: 16,
     },
     inactiveTabText: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontSize: 16,
     },
     label: {
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
         marginBottom: 8,
         fontSize: 14,
     },
@@ -196,36 +176,36 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     forgotPassword: {
-        color: theme.colors.primary,
+        color: defaultTheme.colors.primary,
         fontSize: 12,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: theme.colors.surface,
+        backgroundColor: defaultTheme.colors.surface,
         borderWidth: 1,
-        borderColor: theme.colors.border,
+        borderColor: defaultTheme.colors.border,
         borderRadius: 12,
-        paddingHorizontal: theme.spacing.md,
+        paddingHorizontal: defaultTheme.spacing.md,
         height: 50,
-        marginBottom: theme.spacing.lg,
+        marginBottom: defaultTheme.spacing.lg,
     },
     inputIcon: {
-        marginRight: theme.spacing.sm,
+        marginRight: defaultTheme.spacing.sm,
     },
     input: {
         flex: 1,
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
         height: '100%',
     },
     button: {
-        backgroundColor: theme.colors.primary,
+        backgroundColor: defaultTheme.colors.primary,
         borderRadius: 12,
         height: 50,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: theme.spacing.lg,
-        ...theme.shadows.button,
+        marginBottom: defaultTheme.spacing.lg,
+        ...defaultTheme.shadows.button,
     },
     buttonContent: {
         flexDirection: 'row',
@@ -233,7 +213,7 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     buttonText: {
-        color: theme.colors.background,
+        color: defaultTheme.colors.background,
         fontSize: 18,
         fontWeight: 'bold',
     },
@@ -241,62 +221,62 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         padding: 12,
         borderRadius: 24,
         alignSelf: 'center',
-        marginBottom: theme.spacing.xl,
+        marginBottom: defaultTheme.spacing.xl,
         paddingHorizontal: 24,
     },
     faceIdText: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontSize: 14,
     },
     dividerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: theme.spacing.lg,
+        marginBottom: defaultTheme.spacing.lg,
     },
     divider: {
         flex: 1,
         height: 1,
-        backgroundColor: theme.colors.border,
+        backgroundColor: defaultTheme.colors.border,
     },
     dividerText: {
-        color: theme.colors.textSecondary,
-        paddingHorizontal: theme.spacing.md,
+        color: defaultTheme.colors.textSecondary,
+        paddingHorizontal: defaultTheme.spacing.md,
         fontSize: 12,
     },
     socialButtons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 16,
-        marginBottom: theme.spacing.xl,
+        marginBottom: defaultTheme.spacing.xl,
     },
     socialButton: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceLight,
         paddingVertical: 12,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: theme.colors.border,
+        borderColor: defaultTheme.colors.border,
         gap: 8,
     },
     socialButtonText: {
-        color: theme.colors.text,
+        color: defaultTheme.colors.text,
         fontWeight: '600',
     },
     footerText: {
         textAlign: 'center',
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         fontSize: 12,
         lineHeight: 18,
     },
     link: {
-        color: theme.colors.textSecondary,
+        color: defaultTheme.colors.textSecondary,
         textDecorationLine: 'underline',
     }
 });

@@ -1,7 +1,7 @@
 <?php
 include_once '../config.php';
 
-// Mock Data function if DB is not connected
+// Mock Data
 function getMockIPOs() {
     return [
         [
@@ -9,39 +9,69 @@ function getMockIPOs() {
             "company_name" => "TechNova Solutions (Mock)",
             "open_date" => "2025-12-20",
             "close_date" => "2025-12-22",
+            "listing_date" => "2025-12-26",
             "price_band" => "450-480",
-            "gmp" => 120,
-            "status" => "UPCOMING"
+            "gmp" => 120
         ],
         [
             "id" => 2,
             "company_name" => "GreenEnergy Power (Mock)",
             "open_date" => "2025-12-15",
             "close_date" => "2025-12-17",
+            "listing_date" => "2025-12-21",
             "price_band" => "120-135",
-            "gmp" => 15,
-            "status" => "OPEN"
+            "gmp" => 15
         ]
     ];
 }
 
+// Status Logic
+function getIPOStatus($open_date, $close_date, $listing_date = null) {
+    $today = date("Y-m-d");
+
+    if ($today < $open_date) {
+        return "UPCOMING";
+    } elseif ($today >= $open_date && $today <= $close_date) {
+        return "OPEN";
+    } elseif ($listing_date && $today >= $listing_date) {
+        return "LISTED";
+    } else {
+        return "CLOSED";
+    }
+}
+
+// Final grouped output
+$output = [
+    "UPCOMING" => [],
+    "OPEN" => [],
+    "CLOSED" => [],
+    "LISTED" => []
+];
+
+$data = [];
+
 if ($conn) {
-    $query = "SELECT *, gmp as gmp_price FROM wp_ipos ORDER BY open_date DESC";
+    $query = "SELECT *, gmp AS gmp_price FROM wp_ipos ORDER BY open_date DESC";
     $stmt = $conn->prepare($query);
     $stmt->execute();
-    $num = $stmt->rowCount();
-
-    if ($num > 0) {
-        $ipos_arr = array();
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            array_push($ipos_arr, $row);
-        }
-        echo json_encode($ipos_arr);
-    } else {
-        echo json_encode([]);
-    }
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    // Return mock data if DB connection fails (Useful for local verification without DB)
-    echo json_encode(getMockIPOs());
+    $data = getMockIPOs();
 }
+
+foreach ($data as $row) {
+
+    $status = getIPOStatus(
+        $row["open_date"],
+        $row["close_date"],
+        isset($row["listing_date"]) ? $row["listing_date"] : null
+    );
+
+    $row["status"] = $status;
+    $row["is_sme"] = 0;
+
+    $output[$status][] = $row;
+}
+
+echo json_encode($output);
 ?>

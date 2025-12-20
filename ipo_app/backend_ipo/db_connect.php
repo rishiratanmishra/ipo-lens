@@ -1,5 +1,5 @@
 <?php
-$host = "localhost"; 
+$host = "193.203.184.47"; 
 $db_name = "u809484217_ipo_app";
 $username = "u809484217_ipo_Admin";
 $password = "#Admin!!BalliaJila!!123";

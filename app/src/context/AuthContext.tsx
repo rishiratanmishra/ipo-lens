@@ -1,10 +1,12 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import api from '../services/api'; 
 
 export interface User {
     id: string | number;
     username: string;
+    token?: string;
 }
 
 interface AuthContextType {
@@ -43,13 +45,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const login = async (username: string, password: string) => {
         setIsLoading(true);
         try {
-            // Updated Endpoint
-            const response = await api.post('/auth.php?action=login', { username, password });
+            // WordPress JWT Endpoint
+            // Assuming admin_ipo is the directory for WP
+            const response = await axios.post('https://zolaha.com/ipo_app/admin_ipo/wp-json/jwt-auth/v1/token', {
+                username,
+                password
+            });
             
-            if (response.data.user_id) {
-                const userData: User = { id: response.data.user_id, username: response.data.username };
+            if (response.data.token) {
+                const userData: User = { 
+                    id: response.data.user_id || 0, // WP user ID
+                    username: response.data.user_display_name || username,
+                    token: response.data.token
+                };
                 setUser(userData);
                 await AsyncStorage.setItem('user', JSON.stringify(userData));
+                
+                // Set default header for future requests if needed
+                // api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+                
                 setIsLoading(false);
                 return { success: true };
             }
@@ -63,17 +77,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     const register = async (username: string, password: string) => {
-        setIsLoading(true);
-        try {
-            const response = await api.post('/auth.php?action=register', { username, password });
-            setIsLoading(false);
-            return { success: true, message: response.data.message };
-        } catch (error: any) {
-            setIsLoading(false);
-            console.error("Register Error:", error);
-            const msg = error.response?.data?.message || error.message || 'Registration failed';
-            return { success: false, message: msg };
-        }
+        // Registration via WP API usually requires admin privileges or a specific plugin/endpoint
+        // For now, we might need to disable registration or use a custom endpoint that proxies to wp_create_user
+        // But the user asking for unified auth implies valid WP users.
+        
+        // If we want to support registration, we'd need to hit a custom endpoint or standard WP registration if enabled.
+        // For safety, let's return a message that registration is restricted or use the old endpoint if it still works (but that creates users in the WRONG table).
+        // Since we want unified auth, we should probably disable registration in the app for now or prompt user to create account on website.
+        
+        setIsLoading(false);
+        return { success: false, message: "Registration must be done via the website." };
     };
 
     const logout = async () => {

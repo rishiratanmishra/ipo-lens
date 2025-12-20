@@ -20,9 +20,8 @@ export default function LoginScreen({ navigation }) {
         const result = await login(username, password);
         if (!result.success) {
             Alert.alert('Login Failed', result.message);
-        } else {
-            navigation.replace('Main');
         }
+        // Navigation is handled automatically by AuthContext state change
     };
 
     return (
@@ -114,6 +113,11 @@ const styles = StyleSheet.create({
     header: {
         alignItems: 'center',
         marginBottom: defaultTheme.spacing.xl,
+    },
+    logoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     logoBox: {
         width: 64,

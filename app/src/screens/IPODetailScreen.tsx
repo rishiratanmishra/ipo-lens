@@ -6,45 +6,64 @@ import { theme as defaultTheme } from '../theme';
 
 const { width } = Dimensions.get('window');
 
-// Helper to generate mock data based on theme
-const getMockDetails = (theme) => ({
-    biddingEnds: '2 days',
-    currentGmp: '₹55',
-    gmpChange: '+45%',
-    priceBand: '₹72 - ₹76',
-    lotSize: '195 Shares',
-    minInvest: '₹14,820',
-    issueSize: '₹9,375 Cr',
+// Helper to format date
+const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+// Helper to generate details based on real data
+const getDetails = (theme, ipo) => ({
+    biddingEnds: ipo?.close_date ? formatDate(ipo.close_date) : 'N/A',
+    currentGmp: ipo?.gmp_price ? `₹${ipo.gmp_price}` : '₹0',
+    gmpChange: ipo?.trend === 'UP' ? 'Rising' : (ipo?.trend === 'DOWN' ? 'Falling' : 'Stable'), // Simple deduction or placeholder
+    priceBand: (ipo?.price_band_lower && ipo?.price_band_upper) ? `₹${ipo.price_band_lower} - ₹${ipo.price_band_upper}` : 'N/A',
+    lotSize: ipo?.lot_size ? `${ipo.lot_size} Shares` : 'N/A',
+    minInvest: (ipo?.price_band_upper && ipo?.lot_size) ? `₹${(parseFloat(ipo.price_band_upper) * parseFloat(ipo.lot_size)).toLocaleString('en-IN')}` : 'N/A',
+    issueSize: 'N/A', // Not in API currently
     subscription: {
-        retail: { value: '12.5x', label: 'Retail', color: theme.colors.primary },
-        nii: { value: '4.2x', label: 'Non-Institutional (NII)', color: theme.colors.accent },
-        qib: { value: '0.8x', label: 'QIB', color: theme.colors.gold || '#FFD700' }, // Fallback if gold not in theme
+        retail: { value: 'N/A', label: 'Retail', color: theme.colors.primary },
+        nii: { value: 'N/A', label: 'Non-Institutional (NII)', color: theme.colors.accent },
+        qib: { value: 'N/A', label: 'QIB', color: theme.colors.gold || '#FFD700' },
     },
     timeline: [
-        { title: 'Offer Opens', date: '14 Jul, 2021', icon: 'calendar-outline', active: true },
-        { title: 'Offer Closes', date: '16 Jul, 2021', icon: 'timer-outline', active: true },
-        { title: 'Basis of Allotment', date: '21 Jul, 2021', icon: 'document-text-outline', active: false },
-        { title: 'Listing Date', date: '23 Jul, 2021', icon: 'notifications-outline', active: false },
+        { title: 'Offer Opens', date: formatDate(ipo?.open_date), icon: 'calendar-outline', active: true },
+        { title: 'Offer Closes', date: formatDate(ipo?.close_date), icon: 'timer-outline', active: true },
+        { title: 'Basis of Allotment', date: 'TBA', icon: 'document-text-outline', active: false },
+        { title: 'Listing Date', date: formatDate(ipo?.listing_date), icon: 'notifications-outline', active: false },
     ],
     financials: [
-        { year: '2019', value: 1.3, height: 60 },
-        { year: '2020', value: 2.6, height: 100 },
-        { year: '2021', value: 3.1, height: 140, active: true },
+        { year: '2023', value: 0, height: 60 },
+        { year: '2024', value: 0, height: 100 },
+        { year: '2025', value: 0, height: 140, active: true },
     ],
-    about: "Zomato is an Indian multinational restaurant aggregator and food delivery company. It provides information, menus and user-reviews of restaurants as well as food delivery options from partner restaurants in select cities."
+    about: ipo?.additional_text || `Details about ${ipo?.company_name || 'the company'} are coming soon.`
 });
 
 export default function IPODetailScreen({ navigation, route }) {
     const { ipo } = route.params || {};
-    const companyName = ipo?.name || 'Zomato Ltd';
-    const tag = ipo?.type || 'Mainboard IPO';
+    const companyName = ipo?.company_name || 'IPO Details';
+    const tag = ipo?.is_sme ? 'SME IPO' : 'Mainboard IPO';
     const { theme } = useTheme();
 
-    const MOCK_DETAILS = useMemo(() => getMockDetails(theme), [theme]);
+    const DETAILS = useMemo(() => getDetails(theme, ipo), [theme, ipo]);
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'OPEN': return theme.colors.success;
+            case 'CLOSED': return theme.colors.error;
+            case 'UPCOMING': return theme.colors.secondary;
+            case 'LISTED': return theme.colors.accent;
+            default: return theme.colors.textSecondary;
+        }
+    };
+
+    const statusColor = getStatusColor(ipo?.status || 'UPCOMING');
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: companyName + ' IPO',
+            title: companyName,
             headerStyle: { backgroundColor: theme.colors.background },
             headerTintColor: theme.colors.text,
             headerRight: () => (
@@ -67,11 +86,11 @@ export default function IPODetailScreen({ navigation, route }) {
                     <Text style={[styles.companySubtitle, { color: theme.colors.textSecondary }]}>{tag} • NSE & BSE</Text>
                     <View style={styles.timerBadge}>
                         <Ionicons name="time" size={12} color="#F59E0B" />
-                        <Text style={styles.timerText}>Bidding Ends in {MOCK_DETAILS.biddingEnds}</Text>
+                        <Text style={styles.timerText}>Closes: {DETAILS.biddingEnds}</Text>
                     </View>
                 </View>
-                <View style={styles.statusBadge}>
-                    <Text style={styles.statusText}>OPEN</Text>
+                <View style={[styles.statusBadge, { backgroundColor: theme.colors.surface, borderColor: statusColor, borderWidth: 1 }]}>
+                    <Text style={[styles.statusText, { color: statusColor }]}>{ipo?.status || 'UPCOMING'}</Text>
                 </View>
             </View>
 
@@ -80,10 +99,10 @@ export default function IPODetailScreen({ navigation, route }) {
                 <View>
                     <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>CURRENT GMP</Text>
                     <View style={styles.gmpRow}>
-                        <Text style={[styles.gmpValue, { color: theme.colors.text }]}>{MOCK_DETAILS.currentGmp}</Text>
+                        <Text style={[styles.gmpValue, { color: theme.colors.text }]}>{DETAILS.currentGmp}</Text>
                         <View style={styles.gmpChangeBadge}>
                             <Ionicons name="trending-up" size={12} color={theme.colors.success} />
-                            <Text style={styles.gmpChangeText}>{MOCK_DETAILS.gmpChange}</Text>
+                            <Text style={styles.gmpChangeText}>{DETAILS.gmpChange}</Text>
                         </View>
                     </View>
                 </View>
@@ -102,52 +121,51 @@ export default function IPODetailScreen({ navigation, route }) {
                 <View style={[styles.detailCard, { marginRight: 8, backgroundColor: theme.colors.surfaceLight }]}>
                     <Ionicons name="cash-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
                     <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>PRICE BAND</Text>
-                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{MOCK_DETAILS.priceBand}</Text>
+                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{DETAILS.priceBand}</Text>
                 </View>
                 <View style={[styles.detailCard, { marginLeft: 8, backgroundColor: theme.colors.surfaceLight }]}>
                     <Ionicons name="cube-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
                     <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>LOT SIZE</Text>
-                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{MOCK_DETAILS.lotSize}</Text>
+                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{DETAILS.lotSize}</Text>
                 </View>
             </View>
             <View style={[styles.grid, { marginTop: 16 }]}>
                 <View style={[styles.detailCard, { marginRight: 8, backgroundColor: theme.colors.surfaceLight }]}>
                     <Ionicons name="wallet-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
                     <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>MIN INVESTMENT</Text>
-                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{MOCK_DETAILS.minInvest}</Text>
+                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{DETAILS.minInvest}</Text>
                 </View>
                 <View style={[styles.detailCard, { marginLeft: 8, backgroundColor: theme.colors.surfaceLight }]}>
                     <Ionicons name="pie-chart-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
                     <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>ISSUE SIZE</Text>
-                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{MOCK_DETAILS.issueSize}</Text>
+                    <Text style={[styles.detailValue, { color: theme.colors.text }]}>{DETAILS.issueSize}</Text>
                 </View>
             </View>
 
             <View style={[styles.sectionHeaderRow, { marginTop: 24 }]}>
                 <Text style={[styles.sectionHeader, { color: theme.colors.text }]}>Subscription Status</Text>
                 <View style={[styles.liveBadge, { backgroundColor: theme.colors.surface }]}>
-                    <Text style={[styles.liveText, { color: theme.colors.textSecondary }]}>Live: 2:30 PM</Text>
+                    <Text style={[styles.liveText, { color: theme.colors.textSecondary }]}>Data N/A</Text>
                 </View>
             </View>
 
             <View style={[styles.subscriptionContainer, { backgroundColor: theme.colors.surfaceLight }]}>
-                {Object.values(MOCK_DETAILS.subscription).map((item, index) => (
+                {Object.values(DETAILS.subscription).map((item, index) => (
                     <View key={index} style={styles.subRow}>
                         <View style={styles.subHeader}>
                             <Text style={[styles.subLabel, { color: theme.colors.text }]}>{item.label}</Text>
                             <Text style={[styles.subValue, { color: theme.colors.success }]}>{item.value} <Text style={{ fontSize: 10, color: theme.colors.textSecondary }}>Subscribed</Text></Text>
                         </View>
                         <View style={[styles.subProgressBg, { backgroundColor: theme.colors.background }]}>
-                            <View style={[styles.subProgressFill, { width: '60%', backgroundColor: item.color }]} />
+                            <View style={[styles.subProgressFill, { width: '0%', backgroundColor: item.color }]} />
                         </View>
-                        {index === 0 && <Text style={[styles.chanceText, { color: theme.colors.textSecondary }]}>Chance of allotment: Low</Text>}
                     </View>
                 ))}
             </View>
 
             <Text style={[styles.sectionHeader, { marginTop: 24, color: theme.colors.text }]}>Timeline</Text>
             <View style={[styles.timelineContainer, { backgroundColor: theme.colors.surfaceLight }]}>
-                {MOCK_DETAILS.timeline.map((item, index) => (
+                {DETAILS.timeline.map((item, index) => (
                     <View key={index} style={styles.timelineItem}>
                         <View style={styles.timelineLeft}>
                             <View style={[
@@ -157,7 +175,7 @@ export default function IPODetailScreen({ navigation, route }) {
                             ]}>
                                 <Ionicons name={item.icon as any} size={20} color={item.active ? theme.colors.background : theme.colors.textSecondary} />
                             </View>
-                            {index < MOCK_DETAILS.timeline.length - 1 && <View style={[styles.timelineLine, { backgroundColor: theme.colors.textSecondary }]} />}
+                            {index < DETAILS.timeline.length - 1 && <View style={[styles.timelineLine, { backgroundColor: theme.colors.textSecondary }]} />}
                         </View>
                         <View style={styles.timelineContent}>
                             <Text style={[styles.timelineTitle, { color: theme.colors.text }]}>{item.title}</Text>
@@ -170,26 +188,13 @@ export default function IPODetailScreen({ navigation, route }) {
             <Text style={[styles.sectionHeader, { marginTop: 24, color: theme.colors.text }]}>Financials (Cr)</Text>
             <View style={[styles.financialsCard, { backgroundColor: theme.colors.surfaceLight }]}>
                 <View style={styles.chartContainer}>
-                    {MOCK_DETAILS.financials.map((item, index) => (
-                        <View key={index} style={styles.chartCol}>
-                            <Text style={[styles.chartYear, { color: theme.colors.textSecondary }]}>{item.year}</Text>
-                            <View style={[styles.chartBar, { height: item.height, backgroundColor: item.active ? theme.colors.primary : '#4B5563' }]} />
-                            <Text style={[styles.chartValue, { color: theme.colors.text }]}>₹{item.value}k</Text>
-                        </View>
-                    ))}
+                    <Text style={{ color: theme.colors.textSecondary }}>Financial data not available</Text>
                 </View>
-                <TouchableOpacity style={[styles.financialsLink, { borderTopColor: theme.colors.border }]}>
-                    <Text style={[styles.financialsLinkText, { color: theme.colors.primary }]}>View Detailed Financials</Text>
-                    <Ionicons name="chevron-forward" size={16} color={theme.colors.primary} />
-                </TouchableOpacity>
             </View>
 
             <Text style={[styles.sectionHeader, { marginTop: 24, color: theme.colors.text }]}>About {companyName}</Text>
             <View style={[styles.aboutCard, { backgroundColor: theme.colors.surfaceLight }]}>
-                <Text style={[styles.aboutText, { color: theme.colors.textSecondary }]}>{MOCK_DETAILS.about}</Text>
-                <TouchableOpacity>
-                    <Text style={[styles.readMore, { color: theme.colors.primary }]}>Read More</Text>
-                </TouchableOpacity>
+                <Text style={[styles.aboutText, { color: theme.colors.textSecondary }]}>{DETAILS.about}</Text>
             </View>
 
         </ScrollView>

@@ -12,13 +12,13 @@ const api = axios.create({
 
 export interface IPO {
     id: string;
-    name: string;
+    company_name: string;
     symbol?: string;
-    bidding_start_date?: string;
-    bidding_end_date?: string;
+    open_date?: string;
+    close_date?: string;
     listing_date?: string;
-    min_price?: string;
-    max_price?: string;
+    price_band_lower?: string;
+    price_band_upper?: string;
     issue_price?: string;
     listing_gains?: string;
     listing_price?: string;
@@ -27,6 +27,8 @@ export interface IPO {
     is_sme?: boolean;
     additional_text?: string;
     document_url?: string;
+    gmp_price?: string;
+    trend?: string; // Optional, can be calculated or added later
 }
 
 export interface Buyback {
@@ -41,10 +43,35 @@ export interface Broker {
     // Add other fields as needed
 }
 
-export const getIPOs = async (): Promise<IPO[]> => {
+export const getIPOs = async (status?: string, is_sme?: number): Promise<IPO[]> => {
     try {
-        const response = await api.get('/get_ipos.php');
-        return response.data;
+        // The API returns { UPCOMING: [], OPEN: [], CLOSED: [], LISTED: [] }
+        // We pass the status param to filter on the backend (optimization), 
+        // but the response structure is always grouped.
+        const response = await api.get('/get_ipos.php', {
+            params: { status, is_sme }
+        });
+        
+        const data = response.data;
+        
+        // If a specific status is requested, return that array
+        if (status && data[status]) {
+            return data[status];
+        } else if (status && !data[status]) {
+            // Fallback if the key doesn't strictly match or is missing
+             return [];
+        }
+
+        // If no status requested (or we want all), we might need to flatten
+        // But HomeScreen typically requests one status at a time.
+        // For safety, if no status, return all flattened.
+        return [
+            ...(data.OPEN || []),
+            ...(data.UPCOMING || []),
+            ...(data.LISTED || []),
+            ...(data.CLOSED || [])
+        ];
+
     } catch (error) {
         console.error("Error fetching IPOs:", error);
         return [];

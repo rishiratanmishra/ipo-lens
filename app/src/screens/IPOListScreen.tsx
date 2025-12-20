@@ -27,6 +27,7 @@ export default function IPOListScreen({ navigation }) {
             case 'OPEN': return { backgroundColor: theme.colors.success };
             case 'CLOSED': return { backgroundColor: theme.colors.error };
             case 'UPCOMING': return { backgroundColor: theme.colors.secondary };
+            case 'LISTED': return { backgroundColor: theme.colors.accent };
             default: return { backgroundColor: theme.colors.textSecondary };
         }
     };
@@ -63,7 +64,7 @@ export default function IPOListScreen({ navigation }) {
             {item.gmp_price ? (
                 <View style={[styles.gmpContainer, { backgroundColor: theme.colors.surface }]}>
                     <Text style={[styles.gmpLabel, { color: theme.colors.secondary }]}>GMP Trend</Text>
-                    <Text style={[styles.gmpValue, { color: theme.colors.text }]}>₹{item.gmp_price} <Text style={{ fontSize: 12, color: item.trend === 'UP' ? theme.colors.success : theme.colors.textSecondary }}>({item.trend})</Text></Text>
+                    <Text style={[styles.gmpValue, { color: theme.colors.text }]}>₹{item.gmp_price} {item.trend && <Text style={{ fontSize: 12, color: item.trend === 'UP' ? theme.colors.success : theme.colors.textSecondary }}>({item.trend})</Text>}</Text>
                 </View>
             ) : null}
         </TouchableOpacity>

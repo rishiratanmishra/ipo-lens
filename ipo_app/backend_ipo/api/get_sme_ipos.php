@@ -1,31 +1,33 @@
 <?php
 include_once '../config.php';
 
-// Mock Data
-function getMockIPOs() {
+// Mock Data fallback (only SME)
+function getMockSMEIPOs() {
     return [
         [
-            "id" => 1,
-            "company_name" => "TechNova Solutions (Mock)",
+            "id" => 10,
+            "company_name" => "SME Tech (Mock)",
             "open_date" => "2025-12-20",
             "close_date" => "2025-12-22",
             "listing_date" => "2025-12-26",
-            "price_band" => "450-480",
-            "gmp" => 120
+            "price_band" => "120-150",
+            "gmp" => 50,
+            "is_sme" => 1
         ],
         [
-            "id" => 2,
-            "company_name" => "GreenEnergy Power (Mock)",
-            "open_date" => "2025-12-15",
-            "close_date" => "2025-12-17",
-            "listing_date" => "2025-12-21",
-            "price_band" => "120-135",
-            "gmp" => 15
+            "id" => 11,
+            "company_name" => "SME Foods (Mock)",
+            "open_date" => "2025-12-10",
+            "close_date" => "2025-12-12",
+            "listing_date" => "2025-12-18",
+            "price_band" => "80-95",
+            "gmp" => 10,
+            "is_sme" => 1
         ]
     ];
 }
 
-// Status Logic
+// Status logic
 function getIPOStatus($open_date, $close_date, $listing_date = null) {
     $today = date("Y-m-d");
 
@@ -40,7 +42,7 @@ function getIPOStatus($open_date, $close_date, $listing_date = null) {
     }
 }
 
-// Final grouped output
+// Output structure
 $output = [
     "UPCOMING" => [],
     "OPEN" => [],
@@ -51,16 +53,16 @@ $output = [
 $data = [];
 
 if ($conn) {
-    $query = "SELECT *, gmp AS gmp_price FROM wp_ipos WHERE is_sme = 0 ORDER BY open_date DESC";
+    // Fetch only SME IPOs
+    $query = "SELECT *, gmp AS gmp_price FROM wp_ipos WHERE is_sme = 1 ORDER BY open_date DESC";
     $stmt = $conn->prepare($query);
     $stmt->execute();
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    $data = getMockIPOs();
+    $data = getMockSMEIPOs();
 }
 
 foreach ($data as $row) {
-
     // Use DB status if available, otherwise calculate it
     if (!empty($row["status"])) {
         $status = $row["status"];
@@ -72,9 +74,7 @@ foreach ($data as $row) {
         );
         $row["status"] = $status;
     }
-
-    $row["is_sme"] = 0;
-
+    
     $output[$status][] = $row;
 }
 

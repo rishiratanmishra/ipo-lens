@@ -19,6 +19,7 @@ export default function HomeScreen({ navigation }) {
     const { user } = React.useContext(AuthContext);
     const { theme } = useTheme();
     const [activeTab, setActiveTab] = useState('OPEN');
+    const [isSme, setIsSme] = useState(false);
     const [ipos, setIpos] = useState<IPO[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -26,8 +27,8 @@ export default function HomeScreen({ navigation }) {
     const loadData = async () => {
         setLoading(true);
         try {
-            // Fetch only Mainboard IPOs (is_sme = 0) for Home Screen
-            const data = await getIPOs(activeTab, 0);
+            // Fetch IPOs based on activeTab and isSme state
+            const data = await getIPOs(activeTab, isSme ? 1 : 0);
             setIpos(data);
         } catch (error) {
             console.error(error);
@@ -39,13 +40,13 @@ export default function HomeScreen({ navigation }) {
 
     useEffect(() => {
         loadData();
-    }, [activeTab]);
+    }, [activeTab, isSme]);
 
     useFocusEffect(
         useCallback(() => {
             // Optional: Auto-refresh when screen comes into focus if needed
             // loadData(); 
-        }, [activeTab])
+        }, [activeTab, isSme])
     );
 
     const onRefresh = () => {
@@ -136,6 +137,22 @@ export default function HomeScreen({ navigation }) {
                         <Ionicons name="notifications-outline" size={22} color={theme.colors.success} />
                     </TouchableOpacity>
                 </View>
+            </View>
+
+            {/* Mainboard / SME Toggle */}
+            <View style={styles.segmentContainer}>
+                <TouchableOpacity
+                    style={[styles.segmentButton, !isSme && { backgroundColor: theme.colors.primary }]}
+                    onPress={() => setIsSme(false)}
+                >
+                    <Text style={[styles.segmentText, !isSme ? { color: '#fff' } : { color: theme.colors.text }]}>Mainboard</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.segmentButton, isSme && { backgroundColor: theme.colors.primary }]}
+                    onPress={() => setIsSme(true)}
+                >
+                    <Text style={[styles.segmentText, isSme ? { color: '#fff' } : { color: theme.colors.text }]}>SME IPO</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Tickers - Keep explicit height to avoid jumping */}
@@ -248,5 +265,9 @@ const styles = StyleSheet.create({
     detailValue: { fontSize: 14, fontWeight: 'bold' },
     gmpRow: { flexDirection: 'row', marginTop: 12, padding: 8, borderRadius: 8, alignItems: 'center' },
     gmpLabel: { fontSize: 12, fontWeight: '600' },
-    gmpValue: { fontSize: 14, fontWeight: 'bold', marginLeft: 4 }
+    gmpValue: { fontSize: 14, fontWeight: 'bold', marginLeft: 4 },
+
+    segmentContainer: { flexDirection: 'row', marginHorizontal: 20, marginVertical: 10, backgroundColor: defaultTheme.colors.surfaceLight, borderRadius: 8, padding: 4 },
+    segmentButton: { flex: 1, paddingVertical: 6, alignItems: 'center', borderRadius: 6 },
+    segmentText: { fontSize: 12, fontWeight: 'bold' }
 });

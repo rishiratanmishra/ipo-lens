@@ -48,8 +48,11 @@ export const getIPOs = async (status?: string, is_sme?: number): Promise<IPO[]> 
         // The API returns { UPCOMING: [], OPEN: [], CLOSED: [], LISTED: [] }
         // We pass the status param to filter on the backend (optimization), 
         // but the response structure is always grouped.
-        const response = await api.get('/get_ipos.php', {
-            params: { status, is_sme }
+        // Check if we need SME or Mainboard
+        const endpoint = is_sme === 1 ? '/get_sme_ipos.php' : '/get_ipos.php';
+        
+        const response = await api.get(endpoint, {
+            params: { status } // Backend handles filtering by status if provided
         });
         
         const data = response.data;

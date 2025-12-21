@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, Image, Linking, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, Image, Linking, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getBrokers, Broker } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,12 +12,19 @@ export default function BrokerListScreen() {
     const [brokers, setBrokers] = useState<Broker[]>([]);
     const [filteredBrokers, setFilteredBrokers] = useState<Broker[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [selectedTab, setSelectedTab] = useState('All');
     const [tabs, setTabs] = useState(['All']);
 
     useEffect(() => {
         loadData();
     }, []);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await loadData();
+        setRefreshing(false);
+    };
 
     useEffect(() => {
         if (selectedTab === 'All') {
@@ -126,8 +133,14 @@ export default function BrokerListScreen() {
                             </View>
                         )}
                         {item.categories && item.categories.length > 0 && (
-                            <View style={[styles.catBadge, { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border }]}>
-                                <Text style={[styles.catText, { color: theme.colors.textTertiary }]}>{item.categories[0]}</Text>
+                            <View style={[
+                                styles.catBadge,
+                                {
+                                    backgroundColor: theme.dark ? 'rgba(16, 185, 129, 0.15)' : '#ecfdf5',
+                                    borderColor: theme.dark ? 'rgba(16, 185, 129, 0.3)' : '#d1fae5'
+                                }
+                            ]}>
+                                <Text style={[styles.catText, { color: theme.colors.primary }]}>{item.categories[0]}</Text>
                             </View>
                         )}
                     </View>
@@ -215,6 +228,9 @@ export default function BrokerListScreen() {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContent}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+                }
                 ListEmptyComponent={<Text style={[styles.empty, { color: theme.colors.textSecondary }]}>No Brokers found in {selectedTab}.</Text>}
             />
         </SafeAreaView>
@@ -294,6 +310,19 @@ const styles = StyleSheet.create({
     ratingRow: { flexDirection: 'row', alignItems: 'center' },
     stars: { flexDirection: 'row', marginRight: 6 },
     ratingVal: { fontSize: 12, fontWeight: '600' },
+
+    catBadge: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 4,
+        borderWidth: 1,
+        marginTop: 4,
+    },
+    catText: {
+        fontSize: 10,
+        fontWeight: '500',
+    },
 
     // Segment Control Styles
     segmentContainer: {

@@ -34,7 +34,14 @@ export interface IPO {
 export interface Buyback {
     id: string;
     company_name: string;
-    // Add other fields as needed based on response
+    company?: string; // key from WP API
+    offer_price?: string;
+    buyback_price?: string;
+    type?: string;
+    status: string;
+    logo?: string;
+    record_date?: string;
+    current_market_price?: string;
 }
 
 export interface Broker {
@@ -94,7 +101,15 @@ export const getIPOs = async (status?: string, is_sme?: number): Promise<IPO[]> 
 export const getBuybacks = async (): Promise<Buyback[]> => {
     try {
         const response = await api.get('/get_buybacks.php');
-        return response.data;
+        const data = response.data;
+        
+        // The API now returns { OPEN: [], UPCOMING: [], CLOSED: [] }
+        // Flatten into a single array for the UI
+        return [
+            ...(data.OPEN || []),
+            ...(data.UPCOMING || []),
+            ...(data.CLOSED || [])
+        ];
     } catch (error) {
         console.error("Error fetching Buybacks:", error);
         return [];

@@ -135,6 +135,36 @@ export const getBrokers = async (): Promise<Broker[]> => {
     }
 };
 
+export const getGMPTrends = async (
+    page: number = 1,
+    limit: number = 20,
+    is_sme?: number,
+    status?: string,
+    minPremium: number = 1,
+    maxPremium?: number
+): Promise<{ ipos: IPO[], pagination: any }> => {
+    try {
+        const response = await api.get('/get_gmp_trends.php', {
+            params: { 
+                page, 
+                limit, 
+                is_sme, 
+                status: status || undefined,
+                min_premium: minPremium,
+                max_premium: maxPremium
+            }
+        });
+        
+        return {
+            ipos: response.data.gmp_trends || [],
+            pagination: response.data.pagination || {}
+        };
+    } catch (error) {
+        console.error("Error fetching GMP trends:", error);
+        return { ipos: [], pagination: {} };
+    }
+};
+
 export interface MarketIndex {
     name: string;
     value: string;

@@ -26,7 +26,7 @@ export default function RegisterScreen({ navigation }) {
         const result = await register(username, password);
         if (result.success) {
             Alert.alert('Success', 'Account created! Please login.', [
-                { text: 'OK', onPress: () => navigation.goBack() }
+                { text: 'OK', onPress: () => navigation.navigate('Login') }
             ]);
         } else {
             Alert.alert('Registration Failed', result.message);
@@ -37,7 +37,7 @@ export default function RegisterScreen({ navigation }) {
         <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
             <View style={styles.header}>
                 <View style={styles.logoContainer}>
-                    <View style={[styles.logoBox, { backgroundColor: theme.colors.surfaceLight, borderColor: theme.colors.border }]}>
+                    <View style={[styles.logoBox, { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border }]}>
                         <Ionicons name="filter-circle-outline" size={32} color={theme.colors.primary} />
                     </View>
                 </View>
@@ -46,7 +46,7 @@ export default function RegisterScreen({ navigation }) {
             </View>
 
             <View style={styles.formContainer}>
-                <View style={[styles.tabContainer, { backgroundColor: theme.colors.surfaceLight }]}>
+                <View style={[styles.tabContainer, { backgroundColor: theme.colors.surfaceHighlight }]}>
                     <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Login')}>
                         <Text style={[styles.inactiveTabText, { color: theme.colors.textSecondary }]}>Log In</Text>
                     </TouchableOpacity>
@@ -132,11 +132,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: defaultTheme.spacing.xl,
     },
+    logoContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     logoBox: {
         width: 64,
         height: 64,
         borderRadius: 16,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: defaultTheme.spacing.md,
@@ -159,7 +163,7 @@ const styles = StyleSheet.create({
     tabContainer: {
         flexDirection: 'row',
         marginBottom: defaultTheme.spacing.xl,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 12,
         padding: 4,
     },
@@ -212,7 +216,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: defaultTheme.spacing.lg,
-        ...defaultTheme.shadows.button,
+        ...defaultTheme.shadows.soft,
     },
     buttonContent: {
         flexDirection: 'row',
@@ -250,7 +254,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         paddingVertical: 12,
         borderRadius: 12,
         borderWidth: 1,

@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import api from '../services/api'; 
+import api from '../services/api';
 
 export interface User {
     id: string | number;
@@ -51,19 +51,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 username,
                 password
             });
-            
+
             if (response.data.token) {
-                const userData: User = { 
+                const userData: User = {
                     id: response.data.user_id || 0, // WP user ID
                     username: response.data.user_display_name || username,
                     token: response.data.token
                 };
                 setUser(userData);
                 await AsyncStorage.setItem('user', JSON.stringify(userData));
-                
+
                 // Set default header for future requests if needed
                 // api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-                
+
                 setIsLoading(false);
                 return { success: true };
             }
@@ -77,16 +77,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     const register = async (username: string, password: string) => {
-        // Registration via WP API usually requires admin privileges or a specific plugin/endpoint
-        // For now, we might need to disable registration or use a custom endpoint that proxies to wp_create_user
-        // But the user asking for unified auth implies valid WP users.
-        
-        // If we want to support registration, we'd need to hit a custom endpoint or standard WP registration if enabled.
-        // For safety, let's return a message that registration is restricted or use the old endpoint if it still works (but that creates users in the WRONG table).
-        // Since we want unified auth, we should probably disable registration in the app for now or prompt user to create account on website.
-        
-        setIsLoading(false);
-        return { success: false, message: "Registration must be done via the website." };
+        setIsLoading(true);
+        try {
+            // Using custom registration endpoint that wraps wp_create_user
+            // User must upload register_user.php to /backend_ipo/api/
+            const response = await api.post('/register_user.php', {
+                username,
+                email: username, // Assuming username is email processing in UI
+                password
+            });
+
+            setIsLoading(false);
+            if (response.data.success) {
+                return { success: true };
+            } else {
+                return { success: false, message: response.data.message || 'Registration failed' };
+            }
+        } catch (error: any) {
+            setIsLoading(false);
+            const msg = error.response?.data?.message || error.message || 'Network error';
+            return { success: false, message: msg };
+        }
     };
 
     const logout = async () => {

@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
-import { getIPOs, IPO } from '../services/api';
+import { getIPOs, IPO, getMarketIndices, MarketIndex } from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -26,27 +26,30 @@ export default function HomeScreen({ navigation }) {
     const [ipos, setIpos] = useState<IPO[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [marketIndices, setMarketIndices] = useState<{ nifty: MarketIndex, sensex: MarketIndex, banknifty: MarketIndex} | null>(null);
 
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getIPOs(activeTab, isSme ? 1 : 0);
             setIpos(data);
+
+            const indices = await getMarketIndices();
+            setMarketIndices(indices);
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [activeTab, isSme]);
 
     useEffect(() => {
         loadData();
-    }, [activeTab, isSme]);
+    }, [loadData]);
 
     useFocusEffect(
         useCallback(() => {
-            // Optional auto-refresh logic
         }, [activeTab, isSme])
     );
 
@@ -168,32 +171,75 @@ export default function HomeScreen({ navigation }) {
                 {/* Market Ticker */}
                 <View style={{ height: 85, marginBottom: 10 }}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tickerScroll}>
+                        {/* NIFTY 50 */}
                         <LinearGradient
                             colors={theme.gradients.darkCard}
                             style={[styles.tickerCard, { borderColor: theme.colors.border }]}
                         >
                             <View>
                                 <Text style={[styles.tickerLabel, { color: theme.colors.textSecondary }]}>NIFTY 50</Text>
-                                <Text style={[styles.tickerValue, { color: theme.colors.white }]}>24,142.50</Text>
+                                <Text style={[styles.tickerValue, { color: theme.colors.text }]}>
+                                    {marketIndices?.nifty.value || 'Loading...'}
+                                </Text>
                             </View>
-                            <View style={[styles.trendBadge, { backgroundColor: theme.colors.success + '20' }]}>
-                                <Ionicons name="arrow-up" size={12} color={theme.colors.success} />
-                                <Text style={{ fontSize: 10, color: theme.colors.success, fontWeight: 'bold' }}>0.4%</Text>
+                            <View style={[styles.trendBadge, { marginBottom: 20, backgroundColor: (marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
+                                <Ionicons
+                                    name={marketIndices?.nifty.isUp ? "arrow-up" : "arrow-down"}
+                                    size={12}
+                                    color={marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error}
+                                />
+                                <Text style={{ fontSize: 10, color: marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error, fontWeight: 'bold' }}>
+                                    {marketIndices?.nifty.percentChange || '0.0%'}
+                                </Text>
                             </View>
                         </LinearGradient>
+
+                        {/* SENSEX */}
                         <LinearGradient
                             colors={theme.gradients.darkCard}
                             style={[styles.tickerCard, { borderColor: theme.colors.border }]}
                         >
                             <View>
                                 <Text style={[styles.tickerLabel, { color: theme.colors.textSecondary }]}>SENSEX</Text>
-                                <Text style={[styles.tickerValue, { color: theme.colors.white }]}>79,500.20</Text>
+                                <Text style={[styles.tickerValue, { color: theme.colors.text }]}>
+                                    {marketIndices?.sensex.value || 'Loading...'}
+                                </Text>
                             </View>
-                            <View style={[styles.trendBadge, { backgroundColor: theme.colors.success + '20' }]}>
-                                <Ionicons name="arrow-up" size={12} color={theme.colors.success} />
-                                <Text style={{ fontSize: 10, color: theme.colors.success, fontWeight: 'bold' }}>0.3%</Text>
+                            <View style={[styles.trendBadge, {marginBottom: 20, backgroundColor: (marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
+                                <Ionicons
+                                    name={marketIndices?.sensex.isUp ? "arrow-up" : "arrow-down"}
+                                    size={12}
+                                    color={marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error}
+                                />
+                                <Text style={{ fontSize: 10, color: marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error, fontWeight: 'bold' }}>
+                                    {marketIndices?.sensex.percentChange || '0.0%'}
+                                </Text>
                             </View>
                         </LinearGradient>
+
+                        {/* BANKNIFTY */}
+                        <LinearGradient
+                            colors={theme.gradients.darkCard}
+                            style={[styles.tickerCard, { borderColor: theme.colors.border }]}
+                        >
+                            <View>
+                                <Text style={[styles.tickerLabel, { color: theme.colors.textSecondary }]}>BANKNIFTY</Text>
+                                <Text style={[styles.tickerValue, { color: theme.colors.text }]}>
+                                    {marketIndices?.banknifty.value || 'Loading...'}
+                                </Text>
+                            </View>
+                            <View style={[styles.trendBadge, {marginBottom: 20, backgroundColor: (marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
+                                <Ionicons
+                                    name={marketIndices?.banknifty.isUp ? "arrow-up" : "arrow-down"}
+                                    size={12}
+                                    color={marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error}
+                                />
+                                <Text style={{ fontSize: 10, color: marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error, fontWeight: 'bold' }}>
+                                    {marketIndices?.banknifty.percentChange || '0.0%'}
+                                </Text>
+                            </View>
+                        </LinearGradient>
+                        
                     </ScrollView>
                 </View>
 

@@ -7,12 +7,11 @@ import { AuthContext } from "../context/AuthContext";
 import HomeScreen from "../screens/HomeScreen";
 import GMPListScreen from "../screens/GMPListScreen";
 import BuybackListScreen from "../screens/BuybackListScreen";
-import PortfolioScreen from "../screens/PortfolioScreen";
-import GuestPortfolioScreen from "../screens/GuestPortfolioScreen";
+
 
 export type MainTabParamList = {
   Dashboard: undefined;
-  Portfolio: undefined;
+
   GMP: undefined;
   Buyback: undefined;
 };
@@ -22,7 +21,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const TabIcon = (route: string, focused: boolean) => {
   const icons: Record<string, { active: string; inactive: string }> = {
     Dashboard: { active: "home", inactive: "home-outline" },
-    Portfolio: { active: "briefcase", inactive: "briefcase-outline" },
+
     GMP: { active: "trending-up", inactive: "trending-up" },
     Buyback: { active: "repeat", inactive: "repeat" },
   };
@@ -68,10 +67,7 @@ export default function MainTabs() {
       <Tab.Screen name="Dashboard" component={HomeScreen} />
       <Tab.Screen name="GMP" component={GMPListScreen} />
       <Tab.Screen name="Buyback" component={BuybackListScreen} />
-      <Tab.Screen
-        name="Portfolio"
-        component={user ? PortfolioScreen : GuestPortfolioScreen}
-      />
+
     </Tab.Navigator>
   );
 }

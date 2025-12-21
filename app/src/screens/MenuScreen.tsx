@@ -25,7 +25,7 @@ export default function MenuScreen() {
                     style: "destructive",
                     onPress: async () => {
                         await logout();
-                        navigation.navigate('Main'); // Reset or go back
+                        // Navigation is handled automatically by AuthContext
                     }
                 }
             ]

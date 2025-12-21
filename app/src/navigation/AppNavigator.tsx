@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { StatusBar } from "expo-status-bar";
 
 import { useTheme } from "../context/ThemeContext";
 import { AuthProvider, AuthContext } from "../context/AuthContext";
@@ -28,7 +29,7 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
-    const { theme } = useTheme();
+    const { theme, isDark } = useTheme();
     const { user, isLoading } = useContext(AuthContext);
 
     if (isLoading) {
@@ -40,49 +41,52 @@ function RootNavigator() {
     }
 
     return (
-        <Stack.Navigator
-            id="RootStack"
-            screenOptions={{
-                headerShown: false,
-                cardStyle: { backgroundColor: theme.colors.background },
-            }}
-        >
-            {user ? (
-                // Screens for logged-in users
-                <>
-                    <Stack.Screen name="Main" component={MainTabs} />
-                    <Stack.Screen
-                        name="Menu"
-                        component={MenuScreen}
-                        options={{ presentation: "modal" }}
-                    />
-                    <Stack.Screen name="Settings" component={SettingsScreen} />
-                    <Stack.Screen
-                        name="IPODetail"
-                        component={IPODetailScreen}
-                        options={{
-                            headerShown: true,
-                            title: "IPO Details",
-                            headerStyle: {
-                                backgroundColor: theme.colors.surface,
-                                elevation: 0,
-                                shadowOpacity: 0,
-                                borderBottomWidth: 0,
-                            },
-                            headerTintColor: theme.colors.text,
-                            headerTitleStyle: theme.typography.title,
-                        }}
-                    />
-                </>
-            ) : (
-                // Screens for guests / not logged in
-                <>
-                    <Stack.Screen name="Welcome" component={WelcomeScreen} />
-                    <Stack.Screen name="Login" component={LoginScreen} />
-                    <Stack.Screen name="Register" component={RegisterScreen} />
-                </>
-            )}
-        </Stack.Navigator>
+        <>
+            <StatusBar style={isDark ? "light" : "dark"} />
+            <Stack.Navigator
+                id="RootStack"
+                screenOptions={{
+                    headerShown: false,
+                    cardStyle: { backgroundColor: theme.colors.background },
+                }}
+            >
+                {user ? (
+                    // Screens for logged-in users
+                    <>
+                        <Stack.Screen name="Main" component={MainTabs} />
+                        <Stack.Screen
+                            name="Menu"
+                            component={MenuScreen}
+                            options={{ presentation: "modal" }}
+                        />
+                        <Stack.Screen name="Settings" component={SettingsScreen} />
+                        <Stack.Screen
+                            name="IPODetail"
+                            component={IPODetailScreen}
+                            options={{
+                                headerShown: true,
+                                title: "IPO Details",
+                                headerStyle: {
+                                    backgroundColor: theme.colors.surface,
+                                    elevation: 0,
+                                    shadowOpacity: 0,
+                                    borderBottomWidth: 0,
+                                },
+                                headerTintColor: theme.colors.text,
+                                headerTitleStyle: theme.typography.title,
+                            }}
+                        />
+                    </>
+                ) : (
+                    // Screens for guests / not logged in
+                    <>
+                        <Stack.Screen name="Welcome" component={WelcomeScreen} />
+                        <Stack.Screen name="Login" component={LoginScreen} />
+                        <Stack.Screen name="Register" component={RegisterScreen} />
+                    </>
+                )}
+            </Stack.Navigator>
+        </>
     );
 }
 

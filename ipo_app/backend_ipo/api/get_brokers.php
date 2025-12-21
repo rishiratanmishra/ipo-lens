@@ -15,7 +15,7 @@ function getMockBrokers() {
 }
 
 if ($conn) {
-    $query = "SELECT * FROM brokers ORDER BY rating DESC";
+    $query = "SELECT * FROM wp_brokers ORDER BY rating DESC";
     $stmt = $conn->prepare($query);
     $stmt->execute();
     $brokers_arr = [];

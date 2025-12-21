@@ -39,8 +39,18 @@ export interface Buyback {
 
 export interface Broker {
     id: string;
-    name: string;
-    // Add other fields as needed
+    name: string; // mapped from 'title' in API or keep as name if API sends title
+    title: string;
+    logo: string;
+    affiliate_link: string;
+    referral_code: string;
+    rating: number;
+    min_deposit: string;
+    fees: string;
+    pros: string[];
+    cons: string[];
+    is_featured: boolean;
+    categories: string[];
 }
 
 export const getIPOs = async (status?: string, is_sme?: number): Promise<IPO[]> => {

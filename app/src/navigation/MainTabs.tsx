@@ -7,6 +7,7 @@ import { AuthContext } from "../context/AuthContext";
 import HomeScreen from "../screens/HomeScreen";
 import GMPListScreen from "../screens/GMPListScreen";
 import BuybackListScreen from "../screens/BuybackListScreen";
+import BrokerListScreen from "../screens/BrokerListScreen";
 
 
 export type MainTabParamList = {
@@ -14,6 +15,7 @@ export type MainTabParamList = {
 
   GMP: undefined;
   Buyback: undefined;
+  Brokers: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -24,6 +26,7 @@ const TabIcon = (route: string, focused: boolean) => {
 
     GMP: { active: "trending-up", inactive: "trending-up" },
     Buyback: { active: "repeat", inactive: "repeat" },
+    Brokers: { active: "briefcase", inactive: "briefcase-outline" },
   };
 
   return focused
@@ -67,6 +70,7 @@ export default function MainTabs() {
       <Tab.Screen name="Dashboard" component={HomeScreen} />
       <Tab.Screen name="GMP" component={GMPListScreen} />
       <Tab.Screen name="Buyback" component={BuybackListScreen} />
+      <Tab.Screen name="Brokers" component={BrokerListScreen} />
 
     </Tab.Navigator>
   );

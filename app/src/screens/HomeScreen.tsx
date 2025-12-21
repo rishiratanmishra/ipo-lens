@@ -189,7 +189,7 @@ export default function HomeScreen({ navigation }) {
                                 <View style={styles.gmpRow}>
                                     <Ionicons name="trending-up" size={16} color={theme.colors.success} style={{ marginRight: 6 }} />
                                     <Text style={[styles.gmpLabel, { color: theme.colors.textSecondary }]}>Premium:</Text>
-                                    <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{parseInt(item.premium) || item.premium}</Text>
+                                    <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{item.premium}</Text>
                                 </View>
                                 <Ionicons name="chevron-forward" size={16} color={theme.colors.textSecondary} />
                             </View>

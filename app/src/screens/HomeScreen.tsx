@@ -65,8 +65,17 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
+    const formatCompanyName = (name: string) => {
+        if (!name) return '';
+        return name
+            .replace(/ (Limited|Ltd\.?|Pvt\.?|Private|IPO)$/i, '')
+            .replace(/ (Limited|Ltd\.?|Pvt\.?|Private|IPO)$/i, '')
+            .trim();
+    };
+
     const renderIPOCard = ({ item }) => {
         const { bg, text, border } = getStatusColors(item.status);
+        const displayName = formatCompanyName(item.company_name);
 
         return (
             <TouchableOpacity
@@ -81,17 +90,14 @@ export default function HomeScreen({ navigation }) {
                     style={[styles.ipoCard, { borderColor: theme.colors.border }]}
                 >
                     <View style={styles.cardHeader}>
-                        <LinearGradient
-                            colors={theme.gradients.darkCard}
-                            style={styles.iconPlaceholder}
-                        >
-                            <Text style={[styles.iconText, { color: theme.colors.primary }]}>
-                                {item.company_name?.charAt(0) || '?'}
+                        <View style={[styles.iconPlaceholder, { backgroundColor: theme.colors.surface }]}>
+                            <Text style={[styles.iconText, { color: theme.colors.text }]}>
+                                {displayName.charAt(0) || '?'}
                             </Text>
-                        </LinearGradient>
+                        </View>
                         <View style={styles.cardInfo}>
                             <Text style={[styles.companyName, { color: theme.colors.text }]} numberOfLines={1}>
-                                {item.company_name}
+                                {displayName}
                             </Text>
                             <Text style={[styles.companyTag, { color: theme.colors.textSecondary }]}>
                                 {item.is_sme ? 'SME IPO' : 'Mainboard'}
@@ -318,8 +324,18 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     cardHeader: { flexDirection: 'row', alignItems: 'center', padding: 20 },
-    iconPlaceholder: { width: 56, height: 56, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-    iconText: { fontSize: 24, fontWeight: '800' },
+    iconPlaceholder: {
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12, // slightly increased spacing
+    },
+    iconText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
     cardInfo: { flex: 1, justifyContent: 'center' },
     companyName: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
     companyTag: { fontSize: 13 },

@@ -1,111 +1,130 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
-
-const MOCK_GMP_LIST = [
-    {
-        id: '1',
-        name: 'Inox India Ltd',
-        priceRange: '₹627 - 660',
-        status: 'Bidding Open',
-        statusType: 'success',
-        gmp: '₹450',
-        gmpChange: '71.77%',
-        estListing: '₹1,110',
-        fire: true
-    },
-    {
-        id: '2',
-        name: 'Motisons Jewellers',
-        priceRange: '₹52 - 55',
-        status: 'Allotment Out',
-        statusType: 'accent',
-        gmp: '₹109',
-        gmpChange: '198.18%',
-        estListing: '₹164',
-        fire: true
-    },
-    {
-        id: '3',
-        name: 'Muthoot Microfin',
-        priceRange: '₹277 - 291',
-        status: 'Closed',
-        statusType: 'error',
-        gmp: '₹35',
-        gmpChange: '12.03%',
-        estListing: '₹326',
-        fire: false
-    },
-    {
-        id: '4',
-        name: 'Suraj Estate Dev',
-        priceRange: '₹340 - 360',
-        status: 'Closed',
-        statusType: 'error',
-        gmp: '₹20',
-        gmpChange: '5.56%',
-        estListing: '₹380',
-        fire: false
-    }
-];
+import { getIPOs, IPO } from '../services/api';
 
 export default function GMPListScreen({ navigation }) {
     const { theme } = useTheme();
     const [activeTab, setActiveTab] = useState('Mainboard');
+    const [ipos, setIpos] = useState<IPO[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const getStatusColor = (type) => {
-        // @ts-ignore - Assuming colors exist on theme
-        return theme.colors[type] || theme.colors.text;
+    const loadData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const data = await getIPOs(undefined, activeTab === 'SME' ? 1 : 0);
+            const gmpData = data.filter(item => item.gmp_price && item.gmp_price !== '0');
+            setIpos(gmpData);
+        } catch (error) {
+            console.error("Failed to load GMP data", error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, [activeTab]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        loadData();
     };
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity
-            style={[styles.card, { backgroundColor: theme.colors.surfaceHighlight }]}
-            onPress={() => navigation.navigate('IPODetail', { ipo: item })}
-        >
-            <View style={styles.cardLeft}>
-                <View style={[styles.logoPlaceholder, { backgroundColor: theme.colors.surface }]}>
-                    <Text style={[styles.logoText, { color: theme.colors.text }]}>{item.name.substring(0, 1)}</Text>
+    const getStatusColor = (status: string) => {
+        switch (status?.toUpperCase()) {
+            case 'OPEN': return theme.colors.success;
+            case 'UPCOMING': return theme.colors.accent;
+            case 'CLOSED': return theme.colors.error;
+            case 'LISTED': return theme.colors.textSecondary;
+            default: return theme.colors.text;
+        }
+    };
+
+    const calculateGmpStats = (item: IPO) => {
+        const gmp = parseFloat(item.gmp_price || '0');
+        const price = parseFloat(item.price_band_upper || item.issue_price || '0');
+
+        let percentage = '0%';
+        let estListing = '₹0';
+
+        if (price > 0) {
+            const pct = ((gmp / price) * 100).toFixed(2);
+            percentage = `${pct}%`;
+            estListing = `₹${price + gmp}`;
+        }
+
+        return { percentage, estListing, fire: parseFloat(percentage) > 50 };
+    };
+
+    const formatCompanyName = (name: string) => {
+        if (!name) return '';
+        return name
+            .replace(/ (Limited|Ltd\.?|Pvt\.?|Private|IPO)$/i, '')
+            .replace(/ (Limited|Ltd\.?|Pvt\.?|Private|IPO)$/i, '')
+            .trim();
+    };
+
+    const renderItem = ({ item }: { item: IPO }) => {
+        const { percentage, estListing, fire } = calculateGmpStats(item);
+        const displayName = formatCompanyName(item.company_name);
+
+        return (
+            <TouchableOpacity
+                style={[styles.card, { backgroundColor: theme.colors.surfaceHighlight }]}
+                onPress={() => navigation.navigate('IPODetail', { ipo: item })}
+            >
+                <View style={[styles.cardLeft, { maxWidth: '65%' }]}>
+                    <View style={[styles.logoPlaceholder, { backgroundColor: theme.colors.surface }]}>
+                        <Text style={[styles.logoText, { color: theme.colors.text }]}>
+                            {displayName.substring(0, 1) || '?'}
+                        </Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <Text style={[styles.companyName, { color: theme.colors.text }]} numberOfLines={1}>
+                            {displayName}
+                        </Text>
+                        <Text style={[styles.priceRange, { color: theme.colors.textSecondary }]}>
+                            {item.price_band_lower ? `₹${item.price_band_lower} - ${item.price_band_upper}` : 'Price TBA'}
+                        </Text>
+                        <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+                            ● {item.status}
+                        </Text>
+                    </View>
                 </View>
-                <View>
-                    <Text style={[styles.companyName, { color: theme.colors.text }]}>{item.name}</Text>
-                    <Text style={[styles.priceRange, { color: theme.colors.textSecondary }]}>{item.priceRange}</Text>
-                    <Text style={[styles.statusText, { color: getStatusColor(item.statusType) }]}>● {item.status}</Text>
+                <View style={styles.cardRight}>
+                    <View style={styles.gmpRow}>
+                        {fire && <Text>🔥</Text>}
+                        <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{item.gmp_price}</Text>
+                    </View>
+                    <Text style={[styles.gmpChange, { color: theme.colors.success }]}>{percentage}</Text>
+                    <Text style={[styles.estListing, { color: theme.colors.textSecondary }]}>Est: {estListing}</Text>
                 </View>
-            </View>
-            <View style={styles.cardRight}>
-                <View style={styles.gmpRow}>
-                    {item.fire && <Text>🔥</Text>}
-                    <Text style={[styles.gmpValue, { color: theme.colors.success }]}>{item.gmp}</Text>
-                </View>
-                <Text style={[styles.gmpChange, { color: theme.colors.success }]}>{item.gmpChange}</Text>
-                <Text style={[styles.estListing, { color: theme.colors.textSecondary }]}>Est: {item.estListing}</Text>
-            </View>
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
-            {/* Header */}
             <View style={styles.header}>
                 <Text style={[styles.headerTitle, { color: theme.colors.text }]}>GMP Trends</Text>
                 <View style={styles.headerRight}>
                     <View style={[styles.updateBadge, { backgroundColor: theme.colors.surfaceHighlight }]}>
                         <Ionicons name="time-outline" size={12} color={theme.colors.textSecondary} />
-                        <Text style={[styles.updateText, { color: theme.colors.textSecondary }]}>10m ago</Text>
+                        <Text style={[styles.updateText, { color: theme.colors.textSecondary }]}>Live</Text>
                     </View>
                     <TouchableOpacity style={styles.iconButton}>
                         <Ionicons name="search" size={20} color={theme.colors.text} />
                     </TouchableOpacity>
-
                 </View>
             </View>
 
-            {/* Tabs */}
             <View style={styles.tabContainer}>
                 <TouchableOpacity
                     style={[styles.tab, activeTab === 'Mainboard' && { borderBottomColor: theme.colors.primary }]}
@@ -129,7 +148,6 @@ export default function GMPListScreen({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-            {/* Market Mood Hero */}
             <LinearGradient
                 colors={theme.gradients.darkCard}
                 start={{ x: 0, y: 0 }}
@@ -147,23 +165,36 @@ export default function GMPListScreen({ navigation }) {
             </LinearGradient>
 
             <View style={styles.listHeaderRow}>
-                <Text style={[styles.listHeaderTitle, { color: theme.colors.text }]}>Active IPOs</Text>
+                <Text style={[styles.listHeaderTitle, { color: theme.colors.text }]}>Top Gainers</Text>
                 <TouchableOpacity>
                     <Ionicons name="filter" size={20} color={theme.colors.textSecondary} />
                 </TouchableOpacity>
             </View>
 
-            <FlatList
-                data={MOCK_GMP_LIST}
-                keyExtractor={(item) => item.id}
-                renderItem={renderItem}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-            />
+            {loading ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={theme.colors.primary} />
+                </View>
+            ) : (
+                <FlatList
+                    data={ipos}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+                    }
+                    ListEmptyComponent={
+                        <View style={{ alignItems: 'center', marginTop: 50 }}>
+                            <Text style={{ color: theme.colors.textSecondary }}>No GMP data available</Text>
+                        </View>
+                    }
+                />
+            )}
         </SafeAreaView>
     );
 }
-
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: defaultTheme.colors.background },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Modal } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -131,9 +131,17 @@ export default function GMPListScreen({ navigation }) {
             >
                 <View style={[styles.cardLeft, { maxWidth: '65%' }]}>
                     <View style={[styles.logoPlaceholder, { backgroundColor: theme.colors.surface }]}>
-                        <Text style={[styles.logoText, { color: theme.colors.text }]}>
-                            {displayName.substring(0, 1) || '?'}
-                        </Text>
+                        {item.icon_url ? (
+                            <Image
+                                source={{ uri: item.icon_url }}
+                                style={styles.logoImage}
+                                resizeMode="contain"
+                            />
+                        ) : (
+                            <Text style={[styles.logoText, { color: theme.colors.text }]}>
+                                {displayName.substring(0, 1) || '?'}
+                            </Text>
+                        )}
                     </View>
                     <View style={{ flex: 1 }}>
                         <Text style={[styles.companyName, { color: theme.colors.text }]} numberOfLines={1}>
@@ -143,7 +151,7 @@ export default function GMPListScreen({ navigation }) {
                             {item.min_price ? `₹${item.min_price} - ${item.max_price}` : 'Price TBA'}
                         </Text>
                         <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                            ● {item.status}
+                            ● {(item.status).toUpperCase()}
                         </Text>
                     </View>
                 </View>
@@ -466,6 +474,13 @@ const styles = StyleSheet.create({
         backgroundColor: defaultTheme.colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    logoImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 8,
+        color: defaultTheme.colors.text,
+        backgroundColor: defaultTheme.colors.white,
     },
     logoText: {
         fontSize: 18,

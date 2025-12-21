@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, Dimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -9,12 +9,12 @@ import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
 import { getIPOs, IPO, getMarketIndices, MarketIndex } from '../services/api';
 
+
 const { width } = Dimensions.get('window');
 
 const TABS = [
     { id: 'OPEN', label: 'Open' },
     { id: 'UPCOMING', label: 'Upcoming' },
-    { id: 'LISTED', label: 'Listed' },
     { id: 'CLOSED', label: 'Closed' },
 ];
 
@@ -26,12 +26,12 @@ export default function HomeScreen({ navigation }) {
     const [ipos, setIpos] = useState<IPO[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [marketIndices, setMarketIndices] = useState<{ nifty: MarketIndex, sensex: MarketIndex, banknifty: MarketIndex} | null>(null);
+    const [marketIndices, setMarketIndices] = useState<{ nifty: MarketIndex, sensex: MarketIndex, banknifty: MarketIndex } | null>(null);
 
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getIPOs(activeTab, isSme ? 1 : 0);
+            const { ipos: data } = await getIPOs(activeTab, isSme ? 1 : 0);
             setIpos(data);
 
             const indices = await getMarketIndices();
@@ -76,9 +76,9 @@ export default function HomeScreen({ navigation }) {
             .trim();
     };
 
-    const renderIPOCard = ({ item }) => {
+    const renderIPOCard = ({ item }: { item: IPO }) => {
         const { bg, text, border } = getStatusColors(item.status);
-        const displayName = formatCompanyName(item.company_name);
+        const displayName = formatCompanyName(item.name);
 
         return (
             <TouchableOpacity
@@ -94,50 +94,82 @@ export default function HomeScreen({ navigation }) {
                 >
                     <View style={styles.cardHeader}>
                         <View style={[styles.iconPlaceholder, { backgroundColor: theme.colors.surface }]}>
-                            <Text style={[styles.iconText, { color: theme.colors.text }]}>
-                                {displayName.charAt(0) || '?'}
-                            </Text>
+
+                            {/* If icon_url available show image, else initials */}
+                            {item.icon_url ? (
+                                <Image
+                                    source={{ uri: item.icon_url }}
+                                    style={styles.icon}
+                                    resizeMode="contain"
+                                />
+                            ) : (
+                                <Text style={[styles.iconText, { color: theme.colors.text }]}>
+                                    {displayName?.charAt(0) || '?'}
+                                </Text>
+                            )}
                         </View>
+
                         <View style={styles.cardInfo}>
                             <Text style={[styles.companyName, { color: theme.colors.text }]} numberOfLines={1}>
                                 {displayName}
                             </Text>
-                            <Text style={[styles.companyTag, { color: theme.colors.textSecondary }]}>
-                                {item.is_sme ? 'SME IPO' : 'Mainboard'}
-                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                                <View style={{
+                                    backgroundColor: theme.colors.text + '10',
+                                    paddingHorizontal: 6,
+                                    paddingVertical: 2,
+                                    borderRadius: 4
+                                }}>
+                                    <Text style={{
+                                        fontSize: 10,
+                                        fontWeight: '700',
+                                        color: theme.colors.textSecondary
+                                    }}>
+                                        {item.is_sme ? 'SME' : 'MAIN'}
+                                    </Text>
+                                </View>
+                                <Text style={[styles.companyTag, { color: theme.colors.textSecondary }]}>
+                                    {item.allotment_date ? item.allotment_date : 'NA'}
+                                </Text>
+                            </View>
                         </View>
+
                         <View style={[styles.statusBadge, { backgroundColor: bg, borderColor: border, borderWidth: 1 }]}>
                             <Text style={[styles.statusText, { color: text }]}>{item.status}</Text>
                         </View>
                     </View>
-
+                    {/* <Text style={[styles.companyTag, { color: theme.colors.textSecondary }]}>
+                                {item.is_sme ? 'SME IPO' : 'Mainboard'}
+                            </Text> */}
                     <View style={[styles.cardBody, { borderTopColor: theme.colors.border }]}>
                         <View style={styles.detailColumn}>
                             <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>PRICE BAND</Text>
                             <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-                                {item.price_band_lower ? `₹${item.price_band_lower} - ${item.price_band_upper}` : 'TBA'}
+                                {item.min_price ? `₹${item.min_price} - ${item.max_price}` : 'TBA'}
                             </Text>
                         </View>
                         <View style={[styles.detailColumn, { alignItems: 'flex-end' }]}>
-                            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>DATES</Text>
+                            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Listing Date</Text>
                             <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-                                {item.open_date ? `${new Date(item.open_date).getDate()} - ${new Date(item.close_date).getDate()} ${new Date(item.close_date).toLocaleString('default', { month: 'short' })}` : 'TBA'}
+                                {item?.listing_date ? item?.listing_date : 'NA'}
                             </Text>
                         </View>
                     </View>
 
-                    {item.gmp_price && (
-                        <View style={[styles.gmpContainer, { backgroundColor: theme.colors.surfaceHighlight }]}>
-                            <View style={styles.gmpRow}>
-                                <Ionicons name="trending-up" size={16} color={theme.colors.success} style={{ marginRight: 6 }} />
-                                <Text style={[styles.gmpLabel, { color: theme.colors.textSecondary }]}>Premium:</Text>
-                                <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{item.gmp_price}</Text>
+                    {
+                        item.premium && (
+                            <View style={[styles.gmpContainer, { backgroundColor: theme.colors.surfaceHighlight }]}>
+                                <View style={styles.gmpRow}>
+                                    <Ionicons name="trending-up" size={16} color={theme.colors.success} style={{ marginRight: 6 }} />
+                                    <Text style={[styles.gmpLabel, { color: theme.colors.textSecondary }]}>Premium:</Text>
+                                    <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{parseInt(item.premium) || item.premium}</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={16} color={theme.colors.textSecondary} />
                             </View>
-                            <Ionicons name="chevron-forward" size={16} color={theme.colors.textSecondary} />
-                        </View>
-                    )}
-                </LinearGradient>
-            </TouchableOpacity>
+                        )
+                    }
+                </LinearGradient >
+            </TouchableOpacity >
         );
     };
 
@@ -205,7 +237,7 @@ export default function HomeScreen({ navigation }) {
                                     {marketIndices?.sensex.value || 'Loading...'}
                                 </Text>
                             </View>
-                            <View style={[styles.trendBadge, {marginBottom: 20, backgroundColor: (marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
+                            <View style={[styles.trendBadge, { marginBottom: 20, backgroundColor: (marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
                                 <Ionicons
                                     name={marketIndices?.sensex.isUp ? "arrow-up" : "arrow-down"}
                                     size={12}
@@ -228,7 +260,7 @@ export default function HomeScreen({ navigation }) {
                                     {marketIndices?.banknifty.value || 'Loading...'}
                                 </Text>
                             </View>
-                            <View style={[styles.trendBadge, {marginBottom: 20, backgroundColor: (marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
+                            <View style={[styles.trendBadge, { marginBottom: 20, backgroundColor: (marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
                                 <Ionicons
                                     name={marketIndices?.banknifty.isUp ? "arrow-up" : "arrow-down"}
                                     size={12}
@@ -239,7 +271,7 @@ export default function HomeScreen({ navigation }) {
                                 </Text>
                             </View>
                         </LinearGradient>
-                        
+
                     </ScrollView>
                 </View>
 
@@ -350,7 +382,7 @@ const styles = StyleSheet.create({
     segmentButton: { flex: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 10 },
     segmentText: { fontSize: 13, fontWeight: '600' },
 
-    tabsContainer: { marginBottom: 15 },
+    tabsContainer: { marginBottom: 15, marginHorizontal: 24 },
     tab: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: 100, marginRight: 10 },
     tabText: { fontWeight: '600', fontSize: 12 },
 
@@ -385,14 +417,18 @@ const styles = StyleSheet.create({
     cardInfo: { flex: 1, justifyContent: 'center' },
     companyName: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
     companyTag: { fontSize: 13 },
-    statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100, marginLeft:10, marginBottom:20 },
+    statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100, marginLeft: 10, marginBottom: 20 },
     statusText: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
 
     cardBody: { borderTopWidth: 1, flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 16 },
     detailColumn: { flex: 1 },
     detailLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 },
     detailValue: { fontSize: 15, fontWeight: '600' },
-
+    icon: {
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+    },
     gmpContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',

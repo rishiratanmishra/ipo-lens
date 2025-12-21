@@ -9,17 +9,53 @@ export default function IPOListScreen({ navigation }) {
     const [ipos, setIpos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const { theme } = useTheme();
 
     useEffect(() => {
-        loadData();
+        loadData(1);
     }, []);
 
-    const loadData = async () => {
-        const data = await getIPOs();
-        setIpos(data);
+    const loadData = async (pageNum) => {
+        if (pageNum === 1) setLoading(true);
+        else setLoadingMore(true);
+
+        // Fetch flattened list (all statuses)
+        const { ipos: data } = await getIPOs(undefined, undefined, pageNum, 20);
+
+        if (pageNum === 1) {
+            setIpos(data);
+        } else {
+            setIpos(prev => [...prev, ...data]);
+        }
+
+        if (data.length < 5) { // Threshold to determine if more data exists (since we fetch multiple groups, 20 limit applies to each group potentially, but flattened result can be large. If flattened result is small, we are likely done).
+            // Actually, get_ipos.php slices EACH group by 20. So max result could be 20 * 3 = 60 items if all 3 groups are full.
+            // If we get 0 items, definitely done.
+            // Let's rely on data.length === 0 to stop.
+            if (data.length === 0) setHasMore(false);
+        }
+
         setLoading(false);
+        setLoadingMore(false);
         setRefreshing(false);
+    };
+
+    const handleLoadMore = () => {
+        if (!loadingMore && hasMore && !loading) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            loadData(nextPage);
+        }
+    };
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        setPage(1);
+        setHasMore(true);
+        loadData(1);
     };
 
     const getStatusStyle = (status) => {
@@ -33,13 +69,13 @@ export default function IPOListScreen({ navigation }) {
     };
 
     const renderItem = ({ item }) => (
-        <TouchableOpacity style={[styles.card, { backgroundColor: theme.colors.surfaceLight, shadowColor: theme.colors.text }]} onPress={() => navigation.navigate('IPODetail', { ipo: item })}>
+        <TouchableOpacity style={[styles.card, { backgroundColor: theme.colors.surfaceHighlight, shadowColor: theme.colors.text }]} onPress={() => navigation.navigate('IPODetail', { ipo: item })}>
             <View style={styles.cardHeader}>
                 <View style={[styles.iconPlaceholder, { backgroundColor: theme.colors.background }]}>
-                    <Text style={[styles.iconText, { color: theme.colors.primary }]}>{item.company_name.charAt(0)}</Text>
+                    <Text style={[styles.iconText, { color: theme.colors.primary }]}>{item.name ? item.name.charAt(0) : '?'}</Text>
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={[styles.companyName, { color: theme.colors.primary }]} numberOfLines={1}>{item.company_name}</Text>
+                    <Text style={[styles.companyName, { color: theme.colors.primary }]} numberOfLines={1}>{item.name}</Text>
                     <View style={styles.row}>
                         <View style={[styles.badge, getStatusStyle(item.status)]}>
                             <Text style={styles.badgeText}>{item.status}</Text>
@@ -53,7 +89,7 @@ export default function IPOListScreen({ navigation }) {
             <View style={styles.cardBody}>
                 <View style={styles.infoCol}>
                     <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Price Band</Text>
-                    <Text style={[styles.value, { color: theme.colors.text }]}>₹{item.price_band_lower} - {item.price_band_upper}</Text>
+                    <Text style={[styles.value, { color: theme.colors.text }]}>₹{item.min_price} - {item.max_price}</Text>
                 </View>
                 <View style={styles.infoCol}>
                     <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Lot Size</Text>
@@ -61,10 +97,10 @@ export default function IPOListScreen({ navigation }) {
                 </View>
             </View>
 
-            {item.gmp_price ? (
+            {item.premium ? (
                 <View style={[styles.gmpContainer, { backgroundColor: theme.colors.surface }]}>
                     <Text style={[styles.gmpLabel, { color: theme.colors.secondary }]}>GMP Trend</Text>
-                    <Text style={[styles.gmpValue, { color: theme.colors.text }]}>₹{item.gmp_price} {item.trend && <Text style={{ fontSize: 12, color: item.trend === 'UP' ? theme.colors.success : theme.colors.textSecondary }}>({item.trend})</Text>}</Text>
+                    <Text style={[styles.gmpValue, { color: theme.colors.text }]}>₹{parseInt(item.premium) || item.premium} {item.trend && <Text style={{ fontSize: 12, color: item.trend === 'UP' ? theme.colors.success : theme.colors.textSecondary }}>({item.trend})</Text>}</Text>
                 </View>
             ) : null}
         </TouchableOpacity>
@@ -79,8 +115,11 @@ export default function IPOListScreen({ navigation }) {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor={theme.colors.primary} />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
                 ListEmptyComponent={<Text style={[styles.empty, { color: theme.colors.textSecondary }]}>No active IPOs available.</Text>}
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 20 }} /> : null}
             />
         </SafeAreaView>
     );

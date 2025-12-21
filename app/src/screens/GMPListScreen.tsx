@@ -17,8 +17,8 @@ export default function GMPListScreen({ navigation }) {
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getIPOs(undefined, activeTab === 'SME' ? 1 : 0);
-            const gmpData = data.filter(item => item.gmp_price && item.gmp_price !== '0');
+            const { ipos: data } = await getIPOs(undefined, activeTab === 'SME' ? 1 : 0);
+            const gmpData = data.filter(item => item.premium && item.premium !== '0');
             setIpos(gmpData);
         } catch (error) {
             console.error("Failed to load GMP data", error);
@@ -48,16 +48,26 @@ export default function GMPListScreen({ navigation }) {
     };
 
     const calculateGmpStats = (item: IPO) => {
-        const gmp = parseFloat(item.gmp_price || '0');
-        const price = parseFloat(item.price_band_upper || item.issue_price || '0');
+        const gmp = parseFloat(item.premium || '0');
+        const price = item.max_price || 0; // Fallback to max_price
 
         let percentage = '0%';
         let estListing = '₹0';
 
+        // If the premium string contains percentage (e.g. "47 (67.1%)"), we could extract it.
+        // But calculating it ensures consistency with local price data.
         if (price > 0) {
             const pct = ((gmp / price) * 100).toFixed(2);
             percentage = `${pct}%`;
             estListing = `₹${price + gmp}`;
+        }
+
+        // Fallback: search for parens in premium string
+        if (item.premium && item.premium.includes('(')) {
+            const match = item.premium.match(/\((.*?)%\)/);
+            if (match) {
+                percentage = match[1] + '%';
+            }
         }
 
         return { percentage, estListing, fire: parseFloat(percentage) > 50 };
@@ -73,7 +83,7 @@ export default function GMPListScreen({ navigation }) {
 
     const renderItem = ({ item }: { item: IPO }) => {
         const { percentage, estListing, fire } = calculateGmpStats(item);
-        const displayName = formatCompanyName(item.company_name);
+        const displayName = formatCompanyName(item.name);
 
         return (
             <TouchableOpacity
@@ -91,7 +101,7 @@ export default function GMPListScreen({ navigation }) {
                             {displayName}
                         </Text>
                         <Text style={[styles.priceRange, { color: theme.colors.textSecondary }]}>
-                            {item.price_band_lower ? `₹${item.price_band_lower} - ${item.price_band_upper}` : 'Price TBA'}
+                            {item.min_price ? `₹${item.min_price} - ${item.max_price}` : 'Price TBA'}
                         </Text>
                         <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
                             ● {item.status}
@@ -101,7 +111,7 @@ export default function GMPListScreen({ navigation }) {
                 <View style={styles.cardRight}>
                     <View style={styles.gmpRow}>
                         {fire && <Text>🔥</Text>}
-                        <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{item.gmp_price}</Text>
+                        <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{parseInt(item.premium || '0')}</Text>
                     </View>
                     <Text style={[styles.gmpChange, { color: theme.colors.success }]}>{percentage}</Text>
                     <Text style={[styles.estListing, { color: theme.colors.textSecondary }]}>Est: {estListing}</Text>

@@ -1,31 +1,7 @@
 <?php
 include_once '../config.php';
 
-// Mock Data
-function getMockIPOs() {
-    return [
-        [
-            "id" => 1,
-            "company_name" => "TechNova Solutions (Mock)",
-            "open_date" => "2025-12-20",
-            "close_date" => "2025-12-22",
-            "listing_date" => "2025-12-26",
-            "price_band" => "450-480",
-            "gmp" => 120
-        ],
-        [
-            "id" => 2,
-            "company_name" => "GreenEnergy Power (Mock)",
-            "open_date" => "2025-12-15",
-            "close_date" => "2025-12-17",
-            "listing_date" => "2025-12-21",
-            "price_band" => "120-135",
-            "gmp" => 15
-        ]
-    ];
-}
-
-// Status Logic
+// Status logic
 function getIPOStatus($open_date, $close_date, $listing_date = null) {
     $today = date("Y-m-d");
 
@@ -33,50 +9,81 @@ function getIPOStatus($open_date, $close_date, $listing_date = null) {
         return "UPCOMING";
     } elseif ($today >= $open_date && $today <= $close_date) {
         return "OPEN";
-    } elseif ($listing_date && $today >= $listing_date) {
-        return "LISTED";
     } else {
         return "CLOSED";
     }
 }
 
-// Final grouped output
-$output = [
+// Pagination Params
+$page  = isset($_GET['page'])  ? max(1, intval($_GET['page']))  : 1;
+$limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 20;
+$offset = ($page - 1) * $limit;
+
+$response = [
+    "pagination" => [
+        "page"  => $page,
+        "limit" => $limit
+    ],
     "UPCOMING" => [],
-    "OPEN" => [],
-    "CLOSED" => [],
-    "LISTED" => []
+    "OPEN"     => [],
+    "CLOSED"   => []
 ];
 
+// FETCH DATA
 $data = [];
 
 if ($conn) {
-    $query = "SELECT *, gmp AS gmp_price FROM wp_ipos WHERE is_sme = 0 ORDER BY open_date DESC";
+    $query = "SELECT * FROM wp_ipomaster WHERE is_sme = 0 ORDER BY open_date DESC";
     $stmt = $conn->prepare($query);
     $stmt->execute();
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} else {
-    $data = getMockIPOs();
 }
+
+if (!$data || empty($data)) {
+    header("Content-Type: application/json");
+    echo json_encode($response);
+    exit;
+}
+
+// GROUP
+$groups = [
+    "UPCOMING" => [],
+    "OPEN"     => [],
+    "CLOSED"   => []
+];
 
 foreach ($data as $row) {
-
-    // Use DB status if available, otherwise calculate it
-    if (!empty($row["status"])) {
-        $status = $row["status"];
-    } else {
-        $status = getIPOStatus(
-            $row["open_date"],
-            $row["close_date"],
-            isset($row["listing_date"]) ? $row["listing_date"] : null
+    $status = !empty($row["status"])
+        ? strtoupper($row["status"])
+        : getIPOStatus(
+            $row["open_date"] ?? "",
+            $row["close_date"] ?? "",
+            $row["listing_date"] ?? ""
         );
-        $row["status"] = $status;
-    }
 
+    if ($status === "LISTED") $status = "CLOSED";
+    elseif ($status !== "OPEN" && $status !== "UPCOMING") $status = "CLOSED";
+
+    $row["status"] = $status;
     $row["is_sme"] = 0;
 
-    $output[$status][] = $row;
+    $groups[$status][] = $row;
 }
 
-echo json_encode($output);
+// SORT DESCENDING (LATEST FIRST)
+foreach ($groups as $key => &$items) {
+    usort($items, function($a, $b){
+        return strtotime($b['open_date']) <=> strtotime($a['open_date']);
+    });
+}
+unset($items);
+
+// PAGINATION AFTER SORT
+foreach ($groups as $key => $items) {
+    $response["pagination"]["total_$key"] = count($items);
+    $response[$key] = array_slice($items, $offset, $limit);
+}
+
+header("Content-Type: application/json");
+echo json_encode($response);
 ?>

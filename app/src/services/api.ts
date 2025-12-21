@@ -11,24 +11,28 @@ const api = axios.create({
 });
 
 export interface IPO {
-    id: string;
-    company_name: string;
-    symbol?: string;
-    open_date?: string;
-    close_date?: string;
-    listing_date?: string;
-    price_band_lower?: string;
-    price_band_upper?: string;
-    issue_price?: string;
-    listing_gains?: string;
-    listing_price?: string;
-    lot_size?: string;
+    id: number;
+    name: string;
+    is_sme: number; // 0 or 1
+    open_date: string;
+    close_date: string;
+    price_band: string;
+    min_price: number;
+    max_price: number;
+    lot_size: number;
+    issue_size_cr: string;
+    premium: string;
+    badge: string;
+    allotment_date: string;
+    listing_date: string;
     status: string;
-    is_sme?: boolean;
-    additional_text?: string;
+    icon_url: string;
+    slug: string;
+    // Legacy/Optional fields (mapped or kept for compatibility if needed)
+    symbol?: string;
     document_url?: string;
-    gmp_price?: string;
-    trend?: string; // Optional, can be calculated or added later
+    gmp_price?: string; // Derived from premium?
+    trend?: string;
 }
 
 export interface Buyback {
@@ -60,41 +64,46 @@ export interface Broker {
     categories: string[];
 }
 
-export const getIPOs = async (status?: string, is_sme?: number): Promise<IPO[]> => {
+export const getIPOs = async (status?: string, is_sme?: number, page: number = 1, limit: number = 20): Promise<{ ipos: IPO[], pagination: any }> => {
     try {
-        // The API returns { UPCOMING: [], OPEN: [], CLOSED: [], LISTED: [] }
-        // We pass the status param to filter on the backend (optimization), 
-        // but the response structure is always grouped.
-        // Check if we need SME or Mainboard
         const endpoint = is_sme === 1 ? '/get_sme_ipos.php' : '/get_ipos.php';
         
         const response = await api.get(endpoint, {
-            params: { status } // Backend handles filtering by status if provided
+            params: { page, limit } 
         });
         
         const data = response.data;
+        const pagination = data.pagination || {};
+
+        // If a specific status is requested, we filter locally from the returned groups ??
+        // Actually the backend returns ALL groups paginated.
+        // If we want "OPEN", we pick data.OPEN.
         
-        // If a specific status is requested, return that array
-        if (status && data[status]) {
-            return data[status];
-        } else if (status && !data[status]) {
-            // Fallback if the key doesn't strictly match or is missing
-             return [];
+        let result: IPO[] = [];
+
+        if (status) {
+            // "OPEN", "UPCOMING", "CLOSED"
+            const key = status.toUpperCase();
+            if (data[key]) {
+                result = data[key];
+            }
+        } else {
+            // Flatten all
+            result = [
+                ...(data.OPEN || []),
+                ...(data.UPCOMING || []),
+                ...(data.CLOSED || [])
+            ];
         }
 
-        // If no status requested (or we want all), we might need to flatten
-        // But HomeScreen typically requests one status at a time.
-        // For safety, if no status, return all flattened.
-        return [
-            ...(data.OPEN || []),
-            ...(data.UPCOMING || []),
-            ...(data.LISTED || []),
-            ...(data.CLOSED || [])
-        ];
+        return {
+            ipos: result,
+            pagination
+        };
 
     } catch (error) {
         console.error("Error fetching IPOs:", error);
-        return [];
+        return { ipos: [], pagination: {} };
     }
 };
 

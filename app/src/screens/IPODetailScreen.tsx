@@ -6,44 +6,39 @@ import { theme as defaultTheme } from '../theme';
 
 const { width } = Dimensions.get('window');
 
-// Helper to format date
-const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-};
+
 
 // Helper to generate details based on real data
 const getDetails = (theme, ipo) => ({
-    biddingEnds: ipo?.close_date ? formatDate(ipo.close_date) : 'N/A',
-    currentGmp: ipo?.gmp_price ? `₹${ipo.gmp_price}` : '₹0',
+    biddingEnds: ipo?.close_date || 'N/A',
+    currentGmp: ipo?.premium ? `₹${parseInt(ipo.premium)}` : '₹0',
     gmpChange: ipo?.trend === 'UP' ? 'Rising' : (ipo?.trend === 'DOWN' ? 'Falling' : 'Stable'), // Simple deduction or placeholder
-    priceBand: (ipo?.price_band_lower && ipo?.price_band_upper) ? `₹${ipo.price_band_lower} - ₹${ipo.price_band_upper}` : 'N/A',
+    priceBand: (ipo?.min_price && ipo?.max_price) ? `₹${ipo.min_price} - ₹${ipo.max_price}` : 'N/A',
     lotSize: ipo?.lot_size ? `${ipo.lot_size} Shares` : 'N/A',
-    minInvest: (ipo?.price_band_upper && ipo?.lot_size) ? `₹${(parseFloat(ipo.price_band_upper) * parseFloat(ipo.lot_size)).toLocaleString('en-IN')}` : 'N/A',
-    issueSize: 'N/A', // Not in API currently
+    minInvest: (ipo?.max_price && ipo?.lot_size) ? `₹${(ipo.max_price * ipo.lot_size).toLocaleString('en-IN')}` : 'N/A',
+    issueSize: ipo?.issue_size_cr ? `₹${ipo.issue_size_cr} Cr` : 'N/A',
     subscription: {
         retail: { value: 'N/A', label: 'Retail', color: theme.colors.primary },
         nii: { value: 'N/A', label: 'Non-Institutional (NII)', color: theme.colors.accent },
         qib: { value: 'N/A', label: 'QIB', color: theme.colors.gold || '#FFD700' },
     },
     timeline: [
-        { title: 'Offer Opens', date: formatDate(ipo?.open_date), icon: 'calendar-outline', active: true },
-        { title: 'Offer Closes', date: formatDate(ipo?.close_date), icon: 'timer-outline', active: true },
-        { title: 'Basis of Allotment', date: 'TBA', icon: 'document-text-outline', active: false },
-        { title: 'Listing Date', date: formatDate(ipo?.listing_date), icon: 'notifications-outline', active: false },
+        { title: 'Offer Opens', date: ipo?.open_date || 'TBA', icon: 'calendar-outline', active: true },
+        { title: 'Offer Closes', date: ipo?.close_date || 'TBA', icon: 'timer-outline', active: true },
+        { title: 'Basis of Allotment', date: ipo?.allotment_date || 'TBA', icon: 'document-text-outline', active: false },
+        { title: 'Listing Date', date: ipo?.listing_date || 'TBA', icon: 'notifications-outline', active: false },
     ],
     financials: [
         { year: '2023', value: 0, height: 60 },
         { year: '2024', value: 0, height: 100 },
         { year: '2025', value: 0, height: 140, active: true },
     ],
-    about: ipo?.additional_text || `Details about ${ipo?.company_name || 'the company'} are coming soon.`
+    about: ipo?.additional_text || `Details about ${ipo?.name || 'the company'} are coming soon.`
 });
 
 export default function IPODetailScreen({ navigation, route }) {
     const { ipo } = route.params || {};
-    const companyName = ipo?.company_name || 'IPO Details';
+    const companyName = ipo?.name || 'IPO Details';
     const tag = ipo?.is_sme ? 'SME IPO' : 'Mainboard IPO';
     const { theme } = useTheme();
 

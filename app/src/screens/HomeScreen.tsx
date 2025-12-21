@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     cardInfo: { flex: 1, justifyContent: 'center' },
     companyName: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
     companyTag: { fontSize: 13 },
-    statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100 },
+    statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100, marginLeft:10, marginBottom:20 },
     statusText: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
 
     cardBody: { borderTopWidth: 1, flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 16 },

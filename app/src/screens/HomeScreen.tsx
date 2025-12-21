@@ -6,7 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { theme as defaultTheme } from '../theme';
+import { theme as defaultTheme, theme } from '../theme';
 import { getIPOs, IPO, getMarketIndices, MarketIndex } from '../services/api';
 
 
@@ -428,6 +428,8 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48,
         borderRadius: 12,
+        color: theme.colors.text,
+        backgroundColor: theme.colors.white,
     },
     gmpContainer: {
         flexDirection: 'row',

@@ -37,14 +37,14 @@ export default function MainTabs() {
   const { user } = useContext(AuthContext);
 
   return (
-      <Tab.Navigator
-          id="MainTabs"
+    <Tab.Navigator
+      id="MainTabs"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => (
           <Ionicons
             name={TabIcon(route.name, focused) as any}
-            size={size}
+            size={24}
             color={color}
           />
         ),
@@ -52,8 +52,16 @@ export default function MainTabs() {
         tabBarInactiveTintColor: theme.colors.textSecondary,
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.border,
+          borderTopWidth: 0,
+          elevation: 0, // Remove Android shadow for cleaner look
+          shadowOpacity: 0, // Remove iOS shadow
+          height: 60,
           paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontWeight: '600',
+          fontSize: 10,
         },
       })}
     >

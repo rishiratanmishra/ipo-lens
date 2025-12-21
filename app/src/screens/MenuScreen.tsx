@@ -35,7 +35,7 @@ export default function MenuScreen() {
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
             <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.closeButton, { backgroundColor: theme.colors.surfaceLight }]}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.closeButton, { backgroundColor: theme.colors.surfaceHighlight }]}>
                     <Ionicons name="close" size={24} color={theme.colors.text} />
                 </TouchableOpacity>
                 <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Menu</Text>
@@ -51,7 +51,7 @@ export default function MenuScreen() {
                         <Text style={[styles.userName, { color: theme.colors.text }]}>{user.username}</Text>
                         <Text style={[styles.userEmail, { color: theme.colors.textSecondary }]}>User ID: {user.id}</Text>
 
-                        <TouchableOpacity style={[styles.editProfileButton, { backgroundColor: theme.colors.surfaceLight, borderColor: theme.colors.border }]}>
+                        <TouchableOpacity style={[styles.editProfileButton, { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border }]}>
                             <Text style={[styles.editProfileText, { color: theme.colors.text }]}>Edit Profile</Text>
                         </TouchableOpacity>
                     </View>
@@ -85,7 +85,7 @@ export default function MenuScreen() {
 }
 
 const MenuItem = ({ icon, label, onPress, theme }: { icon: any, label: string, onPress: () => void, theme: any }) => (
-    <TouchableOpacity style={[styles.menuItem, { backgroundColor: theme.colors.surfaceLight }]} onPress={onPress}>
+    <TouchableOpacity style={[styles.menuItem, { backgroundColor: theme.colors.surfaceHighlight }]} onPress={onPress}>
         <View style={styles.menuItemLeft}>
             <View style={[styles.menuIconBox, { backgroundColor: theme.colors.surface }]}>
                 <Ionicons name={icon} size={20} color={theme.colors.text} />
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
         height: 40,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 20,
     },
     headerTitle: {
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 8,
         borderRadius: 20,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderWidth: 1,
         borderColor: defaultTheme.colors.border,
     },
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 12,
         paddingHorizontal: 16,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 12,
     },
     menuItemLeft: {

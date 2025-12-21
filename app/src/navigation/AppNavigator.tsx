@@ -63,8 +63,14 @@ function RootNavigator() {
                         options={{
                             headerShown: true,
                             title: "IPO Details",
-                            headerStyle: { backgroundColor: theme.colors.surface },
+                            headerStyle: {
+                                backgroundColor: theme.colors.surface,
+                                elevation: 0,
+                                shadowOpacity: 0,
+                                borderBottomWidth: 0,
+                            },
                             headerTintColor: theme.colors.text,
+                            headerTitleStyle: theme.typography.title,
                         }}
                     />
                 </>

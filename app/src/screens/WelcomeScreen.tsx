@@ -34,7 +34,7 @@ const WelcomeScreen = ({ navigation }) => {
 
             <View style={styles.featuresContainer}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: defaultTheme.spacing.md }}>
-                    <View style={[styles.featureCard, { backgroundColor: theme.colors.surfaceLight }]}>
+                    <View style={[styles.featureCard, { backgroundColor: theme.colors.surfaceHighlight }]}>
                         <View style={styles.featureIcon}>
                             <Ionicons name="stats-chart" size={32} color={theme.colors.accent} />
                         </View>
@@ -42,7 +42,7 @@ const WelcomeScreen = ({ navigation }) => {
                         <Text style={[styles.featureDesc, { color: theme.colors.textSecondary }]}>Get real-time grey market premiums</Text>
                     </View>
 
-                    <View style={[styles.featureCard, { backgroundColor: theme.colors.surfaceLight }]}>
+                    <View style={[styles.featureCard, { backgroundColor: theme.colors.surfaceHighlight }]}>
                         <View style={styles.featureIcon}>
                             <Ionicons name="checkmark-circle" size={32} color={theme.colors.gold} />
                         </View>
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     },
     featureCard: {
         width: 200,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 16,
         padding: defaultTheme.spacing.md,
         marginRight: defaultTheme.spacing.md,

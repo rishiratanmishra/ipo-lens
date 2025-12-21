@@ -77,7 +77,7 @@ export default function IPODetailScreen({ navigation, route }) {
     return (
         <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={{ paddingBottom: 40 }}>
             {/* Top Card */}
-            <View style={[styles.topCard, { backgroundColor: theme.colors.surfaceLight }]}>
+            <View style={[styles.topCard, { backgroundColor: theme.colors.surfaceHighlight }]}>
                 <View style={[styles.logoContainer, { backgroundColor: theme.colors.background }]}>
                     <Text style={[styles.logoText, { color: theme.colors.primary }]}>{companyName.substring(0, 1)}</Text>
                 </View>
@@ -118,24 +118,24 @@ export default function IPODetailScreen({ navigation, route }) {
 
             <Text style={[styles.sectionHeader, { color: theme.colors.text }]}>Issue Details</Text>
             <View style={styles.grid}>
-                <View style={[styles.detailCard, { marginRight: 8, backgroundColor: theme.colors.surfaceLight }]}>
+                <View style={[styles.detailCard, { marginRight: 8, backgroundColor: theme.colors.surfaceHighlight }]}>
                     <Ionicons name="cash-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
                     <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>PRICE BAND</Text>
                     <Text style={[styles.detailValue, { color: theme.colors.text }]}>{DETAILS.priceBand}</Text>
                 </View>
-                <View style={[styles.detailCard, { marginLeft: 8, backgroundColor: theme.colors.surfaceLight }]}>
+                <View style={[styles.detailCard, { marginLeft: 8, backgroundColor: theme.colors.surfaceHighlight }]}>
                     <Ionicons name="cube-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
                     <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>LOT SIZE</Text>
                     <Text style={[styles.detailValue, { color: theme.colors.text }]}>{DETAILS.lotSize}</Text>
                 </View>
             </View>
             <View style={[styles.grid, { marginTop: 16 }]}>
-                <View style={[styles.detailCard, { marginRight: 8, backgroundColor: theme.colors.surfaceLight }]}>
+                <View style={[styles.detailCard, { marginRight: 8, backgroundColor: theme.colors.surfaceHighlight }]}>
                     <Ionicons name="wallet-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
                     <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>MIN INVESTMENT</Text>
                     <Text style={[styles.detailValue, { color: theme.colors.text }]}>{DETAILS.minInvest}</Text>
                 </View>
-                <View style={[styles.detailCard, { marginLeft: 8, backgroundColor: theme.colors.surfaceLight }]}>
+                <View style={[styles.detailCard, { marginLeft: 8, backgroundColor: theme.colors.surfaceHighlight }]}>
                     <Ionicons name="pie-chart-outline" size={20} color={theme.colors.primary} style={styles.detailIcon} />
                     <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>ISSUE SIZE</Text>
                     <Text style={[styles.detailValue, { color: theme.colors.text }]}>{DETAILS.issueSize}</Text>
@@ -149,7 +149,7 @@ export default function IPODetailScreen({ navigation, route }) {
                 </View>
             </View>
 
-            <View style={[styles.subscriptionContainer, { backgroundColor: theme.colors.surfaceLight }]}>
+            <View style={[styles.subscriptionContainer, { backgroundColor: theme.colors.surfaceHighlight }]}>
                 {Object.values(DETAILS.subscription).map((item, index) => (
                     <View key={index} style={styles.subRow}>
                         <View style={styles.subHeader}>
@@ -164,7 +164,7 @@ export default function IPODetailScreen({ navigation, route }) {
             </View>
 
             <Text style={[styles.sectionHeader, { marginTop: 24, color: theme.colors.text }]}>Timeline</Text>
-            <View style={[styles.timelineContainer, { backgroundColor: theme.colors.surfaceLight }]}>
+            <View style={[styles.timelineContainer, { backgroundColor: theme.colors.surfaceHighlight }]}>
                 {DETAILS.timeline.map((item, index) => (
                     <View key={index} style={styles.timelineItem}>
                         <View style={styles.timelineLeft}>
@@ -186,14 +186,14 @@ export default function IPODetailScreen({ navigation, route }) {
             </View>
 
             <Text style={[styles.sectionHeader, { marginTop: 24, color: theme.colors.text }]}>Financials (Cr)</Text>
-            <View style={[styles.financialsCard, { backgroundColor: theme.colors.surfaceLight }]}>
+            <View style={[styles.financialsCard, { backgroundColor: theme.colors.surfaceHighlight }]}>
                 <View style={styles.chartContainer}>
                     <Text style={{ color: theme.colors.textSecondary }}>Financial data not available</Text>
                 </View>
             </View>
 
             <Text style={[styles.sectionHeader, { marginTop: 24, color: theme.colors.text }]}>About {companyName}</Text>
-            <View style={[styles.aboutCard, { backgroundColor: theme.colors.surfaceLight }]}>
+            <View style={[styles.aboutCard, { backgroundColor: theme.colors.surfaceHighlight }]}>
                 <Text style={[styles.aboutText, { color: theme.colors.textSecondary }]}>{DETAILS.about}</Text>
             </View>
 
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: defaultTheme.colors.background, padding: defaultTheme.spacing.md },
     topCard: {
         flexDirection: 'row',
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 12,
         padding: 16,
         alignItems: 'center',
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     },
     detailCard: {
         flex: 1,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 12,
         padding: 12,
     },
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
         color: defaultTheme.colors.text,
     },
     subscriptionContainer: {
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 12,
         padding: 16,
     },
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     timelineContainer: {
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 12,
         padding: 16,
     },
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
     financialsCard: {
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 12,
         padding: 16,
     },
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
         marginRight: 4,
     },
     aboutCard: {
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 12,
         padding: 16,
     },

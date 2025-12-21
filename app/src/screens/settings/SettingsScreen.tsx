@@ -45,7 +45,7 @@ export default function SettingsScreen() {
         isToggle: boolean = false
     ) => (
         <TouchableOpacity
-            style={[styles.itemContainer, { backgroundColor: theme.colors.surfaceLight }]}
+            style={[styles.itemContainer, { backgroundColor: theme.colors.surfaceHighlight }]}
             onPress={isToggle ? onPress : onPress}
             disabled={isToggle}
         >
@@ -154,7 +154,7 @@ export default function SettingsScreen() {
                 onRequestClose={() => setThemeModalVisible(false)}
             >
                 <Pressable style={styles.modalOverlay} onPress={() => setThemeModalVisible(false)}>
-                    <View style={[styles.modalContent, { backgroundColor: theme.colors.surfaceLight }]}>
+                    <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
                         <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Choose Theme</Text>
 
                         <TouchableOpacity style={[styles.modalOption, { borderBottomColor: theme.colors.border }]} onPress={() => handleThemeSelect('light')}>
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         padding: 16,
         borderRadius: 12,
         marginBottom: 8,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         width: '80%',
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 24,
         padding: 24,
         elevation: 5,

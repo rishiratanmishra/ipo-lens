@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
 
@@ -63,7 +64,7 @@ export default function GMPListScreen({ navigation }) {
 
     const renderItem = ({ item }) => (
         <TouchableOpacity
-            style={[styles.card, { backgroundColor: theme.colors.surfaceLight }]}
+            style={[styles.card, { backgroundColor: theme.colors.surfaceHighlight }]}
             onPress={() => navigation.navigate('IPODetail', { ipo: item })}
         >
             <View style={styles.cardLeft}>
@@ -93,7 +94,7 @@ export default function GMPListScreen({ navigation }) {
             <View style={styles.header}>
                 <Text style={[styles.headerTitle, { color: theme.colors.text }]}>GMP Trends</Text>
                 <View style={styles.headerRight}>
-                    <View style={[styles.updateBadge, { backgroundColor: theme.colors.surfaceLight }]}>
+                    <View style={[styles.updateBadge, { backgroundColor: theme.colors.surfaceHighlight }]}>
                         <Ionicons name="time-outline" size={12} color={theme.colors.textSecondary} />
                         <Text style={[styles.updateText, { color: theme.colors.textSecondary }]}>10m ago</Text>
                     </View>
@@ -129,16 +130,21 @@ export default function GMPListScreen({ navigation }) {
             </View>
 
             {/* Market Mood Hero */}
-            <View style={styles.heroCard}>
+            <LinearGradient
+                colors={theme.gradients.darkCard}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.heroCard, { borderColor: theme.colors.success + '40' }]}
+            >
                 <View>
                     <Text style={[styles.heroLabel, { color: theme.colors.success }]}>MARKET MOOD</Text>
                     <Text style={[styles.heroTitle, { color: theme.colors.text }]}>Bullish Sentiment</Text>
                     <Text style={[styles.heroSubtitle, { color: theme.colors.textSecondary }]}>High listing gains expected</Text>
                 </View>
-                <View style={[styles.moodIcon, { backgroundColor: theme.colors.surfaceLight }]}>
+                <View style={[styles.moodIcon, { backgroundColor: theme.colors.success + '20' }]}>
                     <Ionicons name="trending-up" size={32} color={theme.colors.success} />
                 </View>
-            </View>
+            </LinearGradient>
 
             <View style={styles.listHeaderRow}>
                 <Text style={[styles.listHeaderTitle, { color: theme.colors.text }]}>Active IPOs</Text>
@@ -182,7 +188,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 12,
@@ -247,7 +253,7 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48,
         borderRadius: 24,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -271,7 +277,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         padding: 16,
         borderRadius: 16,
         marginBottom: 12,

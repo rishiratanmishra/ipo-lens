@@ -26,26 +26,44 @@ export default function HomeScreen({ navigation }) {
     const [ipos, setIpos] = useState<IPO[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [marketIndices, setMarketIndices] = useState<{ nifty: MarketIndex, sensex: MarketIndex, banknifty: MarketIndex } | null>(null);
 
-    const loadData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const { ipos: data } = await getIPOs(activeTab, isSme ? 1 : 0);
-            setIpos(data);
+    const loadData = useCallback(async (pageNumber = 1) => {
+        if (pageNumber === 1) setLoading(true);
+        else setLoadingMore(true);
 
-            const indices = await getMarketIndices();
-            setMarketIndices(indices);
+        try {
+            const { ipos: data } = await getIPOs(activeTab, isSme ? 1 : 0, pageNumber);
+
+            if (pageNumber === 1) {
+                setIpos(data);
+            } else {
+                setIpos(prev => [...prev, ...data]);
+            }
+
+            setHasMore(data.length >= 20); // Assuming limit is 20
+            setPage(pageNumber);
+
+            if (pageNumber === 1) {
+                const indices = await getMarketIndices();
+                setMarketIndices(indices);
+            }
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
+            setLoadingMore(false);
             setRefreshing(false);
         }
     }, [activeTab, isSme]);
 
     useEffect(() => {
-        loadData();
+        setPage(1);
+        setHasMore(true);
+        loadData(1);
     }, [loadData]);
 
     useFocusEffect(
@@ -55,7 +73,16 @@ export default function HomeScreen({ navigation }) {
 
     const onRefresh = () => {
         setRefreshing(true);
-        loadData();
+        setPage(1);
+        setHasMore(true);
+        loadData(1);
+    };
+
+    const handleLoadMore = () => {
+        if (!loading && !loadingMore && hasMore) {
+            console.log("Loading more...", page + 1);
+            loadData(page + 1);
+        }
     };
 
     const getStatusColors = (status) => {
@@ -327,6 +354,9 @@ export default function HomeScreen({ navigation }) {
                         refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
                         }
+                        onEndReached={handleLoadMore}
+                        onEndReachedThreshold={0.5}
+                        ListFooterComponent={loadingMore ? <ActivityIndicator color={theme.colors.primary} style={{ marginVertical: 20 }} /> : null}
                         ListEmptyComponent={
                             <View style={styles.center}>
                                 <Text style={{ color: theme.colors.textSecondary, marginTop: 40, fontSize: 16 }}>No {activeTab.toLowerCase()} IPOs found</Text>

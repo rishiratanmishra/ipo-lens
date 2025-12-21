@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { theme as defaultTheme } from '../theme';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -44,24 +45,60 @@ export default function MenuScreen() {
 
             <ScrollView contentContainerStyle={[styles.content, { padding: theme.spacing.md }]}>
                 {user ? (
-                    <View style={[styles.profileSection, { borderBottomColor: theme.colors.border }]}>
-                        <View style={[styles.avatarLarge, { backgroundColor: theme.colors.primary }]}>
-                            <Text style={[styles.avatarText, { color: theme.colors.background }]}>{user.username.charAt(0).toUpperCase()}</Text>
+                    <View style={[styles.profileCard, { backgroundColor: theme.colors.glass, borderColor: theme.colors.glassStroke }]}>
+                        <View style={styles.profileHeader}>
+                            <View style={styles.avatarWrapper}>
+                                <View style={[styles.avatarContainer, { borderColor: theme.colors.primary }]}>
+                                    <Text style={[styles.avatarText, { color: theme.colors.primary }]}>{user.username.charAt(0).toUpperCase()}</Text>
+                                </View>
+                                <TouchableOpacity style={[styles.editBadge, { backgroundColor: theme.colors.primary, borderColor: theme.colors.surface }]}>
+                                    <Ionicons name="pencil" size={10} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.profileInfo}>
+                                <View style={styles.nameRow}>
+                                    <Text style={[styles.userName, { color: theme.colors.text }]}>{user.username}</Text>
+                                    <View style={[styles.proBadge, { backgroundColor: theme.colors.primary + '20' }]}>
+                                        <Text style={[styles.proBadgeText, { color: theme.colors.primary }]}>PRO</Text>
+                                    </View>
+                                </View>
+                                <Text style={[styles.userHandle, { color: theme.colors.textSecondary }]}>@{user.username.toLowerCase().replace(/\s/g, '')}</Text>
+                            </View>
                         </View>
-                        <Text style={[styles.userName, { color: theme.colors.text }]}>{user.username}</Text>
-                        <Text style={[styles.userEmail, { color: theme.colors.textSecondary }]}>User ID: {user.id}</Text>
 
-                        <TouchableOpacity style={[styles.editProfileButton, { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border }]}>
-                            <Text style={[styles.editProfileText, { color: theme.colors.text }]}>Edit Profile</Text>
-                        </TouchableOpacity>
+                        <View style={[styles.divider, { backgroundColor: theme.colors.glassStroke }]} />
+
+                        <View style={styles.profileStats}>
+                            <View style={styles.statItem}>
+                                <Text style={[styles.statValue, { color: theme.colors.text }]}>12</Text>
+                                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Watchlist</Text>
+                            </View>
+                            <View style={styles.statItem}>
+                                <Text style={[styles.statValue, { color: theme.colors.text }]}>5</Text>
+                                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Alerts</Text>
+                            </View>
+                            <View style={styles.statItem}>
+                                <Text style={[styles.statValue, { color: theme.colors.text }]}>2</Text>
+                                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Applied</Text>
+                            </View>
+                        </View>
                     </View>
                 ) : (
-                    <View style={styles.guestSection}>
-                        <Ionicons name="person-circle-outline" size={80} color={theme.colors.textSecondary} />
-                        <Text style={[styles.guestTitle, { color: theme.colors.text }]}>Welcome Guest</Text>
-                        <Text style={[styles.guestSubtitle, { color: theme.colors.textSecondary }]}>Log in to manage your profile</Text>
-                        <TouchableOpacity style={[styles.loginButton, { backgroundColor: theme.colors.primary }]} onPress={() => navigation.navigate('Login')}>
-                            <Text style={[styles.loginButtonText, { color: theme.colors.background }]}>Log In / Sign Up</Text>
+                    <View style={[styles.guestCard, { backgroundColor: theme.colors.glass, borderColor: theme.colors.glassStroke }]}>
+                        <View style={styles.guestContent}>
+                            <View style={[styles.guestIconBox, { backgroundColor: theme.colors.surfaceHighlight }]}>
+                                <Ionicons name="person-outline" size={28} color={theme.colors.text} />
+                            </View>
+                            <View style={styles.guestInfo}>
+                                <Text style={[styles.guestTitle, { color: theme.colors.text }]}>Welcome Guest</Text>
+                                <Text style={[styles.guestSubtitle, { color: theme.colors.textSecondary }]}>Log in to manage your portfolio</Text>
+                            </View>
+                        </View>
+                        <TouchableOpacity
+                            style={[styles.loginButtonDisplay, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '10' }]}
+                            onPress={() => navigation.navigate('Login')}
+                        >
+                            <Text style={[styles.loginButtonText, { color: theme.colors.primary }]}>Log In / Sign Up</Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -126,75 +163,146 @@ const styles = StyleSheet.create({
     content: {
         padding: defaultTheme.spacing.md,
     },
-    profileSection: {
-        alignItems: 'center',
-        marginBottom: defaultTheme.spacing.xl,
-        paddingVertical: defaultTheme.spacing.lg,
-        borderBottomWidth: 1,
-        borderBottomColor: defaultTheme.colors.border,
+    // Profile Card Styles (Glass)
+    profileCard: {
+        borderRadius: 20,
+        padding: 24,
+        marginBottom: 24,
+        borderWidth: 1,
     },
-    avatarLarge: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: defaultTheme.colors.primary,
+    profileHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    avatarWrapper: {
+        marginRight: 16,
+        position: 'relative',
+    },
+    avatarContainer: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        borderWidth: 2,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: defaultTheme.spacing.md,
+    },
+    editBadge: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
     },
     avatarText: {
-        fontSize: 32,
+        fontSize: 24,
         fontWeight: 'bold',
-        color: defaultTheme.colors.background,
     },
-    userName: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: defaultTheme.colors.text,
+    profileInfo: {
+        flex: 1,
+    },
+    nameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
         marginBottom: 4,
     },
-    userEmail: {
-        fontSize: 14,
-        color: defaultTheme.colors.textSecondary,
-        marginBottom: defaultTheme.spacing.md,
+    userName: {
+        fontSize: 18,
+        fontWeight: '700',
     },
-    editProfileButton: {
-        paddingHorizontal: 20,
+    proBadge: {
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 6,
+    },
+    proBadgeText: {
+        fontSize: 10,
+        fontWeight: '700',
+    },
+    userHandle: {
+        fontSize: 14,
+    },
+    editBtn: {
+        paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
-        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderWidth: 1,
-        borderColor: defaultTheme.colors.border,
     },
-    editProfileText: {
-        color: defaultTheme.colors.text,
+    editBtnText: {
+        fontSize: 13,
         fontWeight: '600',
-        fontSize: 14,
     },
-    guestSection: {
+    divider: {
+        height: 1,
+        width: '100%',
+        marginBottom: 20,
+    },
+    profileStats: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 8,
+    },
+    statItem: {
         alignItems: 'center',
-        marginBottom: defaultTheme.spacing.xl,
-        paddingVertical: defaultTheme.spacing.lg,
+        flex: 1,
+    },
+    statValue: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    statLabel: {
+        fontSize: 12,
+        fontWeight: '500',
+    },
+
+    // Guest Card Styles (Glass)
+    guestCard: {
+        borderRadius: 20,
+        padding: 24,
+        marginBottom: 24,
+        borderWidth: 1,
+    },
+    guestContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    guestIconBox: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    guestInfo: {
+        flex: 1,
     },
     guestTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: defaultTheme.colors.text,
-        marginTop: defaultTheme.spacing.md,
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 4,
     },
     guestSubtitle: {
-        color: defaultTheme.colors.textSecondary,
-        marginBottom: defaultTheme.spacing.lg,
+        fontSize: 14,
     },
-    loginButton: {
-        backgroundColor: defaultTheme.colors.primary,
-        paddingHorizontal: 24,
+    loginButtonDisplay: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
         paddingVertical: 12,
         borderRadius: 12,
+        borderWidth: 1,
     },
     loginButtonText: {
-        color: defaultTheme.colors.background,
-        fontWeight: 'bold',
+        fontSize: 16,
+        fontWeight: '600',
     },
     menuItems: {
         gap: 12,

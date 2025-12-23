@@ -183,17 +183,23 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     </View>
 
-                    {
-                        item.premium && (
-                            <View style={[styles.gmpContainer, { backgroundColor: theme.colors.surfaceHighlight }]}>
-                                <View style={styles.gmpRow}>
-                                    <Ionicons name="trending-up" size={16} color={theme.colors.success} style={{ marginRight: 6 }} />
-                                    <Text style={[styles.gmpLabel, { color: theme.colors.textSecondary }]}>Premium:</Text>
-                                    <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{item.premium}</Text>
-                                </View>
-                                <Ionicons name="chevron-forward" size={16} color={theme.colors.textSecondary} />
+                    {item.premium && (
+                        <View style={[styles.gmpContainer, { backgroundColor: theme.colors.surfaceHighlight }]}>
+                            <View style={styles.gmpRow}>
+                                <Ionicons
+                                    name={parseFloat(item.premium) < 0 ? "trending-down" : (parseFloat(item.premium) === 0 ? "remove" : "trending-up")}
+                                    size={16}
+                                    color={parseFloat(item.premium) < 0 ? theme.colors.error : (parseFloat(item.premium) === 0 ? theme.colors.textSecondary : theme.colors.success)}
+                                    style={{ marginRight: 6 }}
+                                />
+                                <Text style={[styles.gmpLabel, { color: theme.colors.textSecondary }]}>Premium:</Text>
+                                <Text style={[styles.gmpValue, { color: parseFloat(item.premium) < 0 ? theme.colors.error : (parseFloat(item.premium) === 0 ? theme.colors.textSecondary : theme.colors.success) }]}>
+                                    {parseFloat(item.premium) < 0 ? `-₹${Math.abs(parseFloat(item.premium))}` : `₹${item.premium}`}
+                                </Text>
                             </View>
-                        )
+                            <Ionicons name="chevron-forward" size={16} color={theme.colors.textSecondary} />
+                        </View>
+                    )
                     }
                 </LinearGradient >
             </TouchableOpacity >

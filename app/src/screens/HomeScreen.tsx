@@ -152,11 +152,11 @@ export default function HomeScreen({ navigation }) {
                                         fontWeight: '700',
                                         color: theme.colors.textSecondary
                                     }}>
-                                        {item.is_sme ? 'SME' : 'MAIN'}
+                                        Price Band
                                     </Text>
                                 </View>
                                 <Text style={[styles.companyTag, { color: theme.colors.textSecondary }]}>
-                                    {item.allotment_date ? item.allotment_date : 'NA'}
+                                    {item.min_price ? `₹${item.min_price} - ${item.max_price}` : 'Price TBA'}
                                 </Text>
                             </View>
                         </View>
@@ -168,18 +168,35 @@ export default function HomeScreen({ navigation }) {
                     {/* <Text style={[styles.companyTag, { color: theme.colors.textSecondary }]}>
                                 {item.is_sme ? 'SME IPO' : 'Mainboard'}
                             </Text> */}
-                    <View style={[styles.cardBody, { borderTopColor: theme.colors.border }]}>
-                        <View style={styles.detailColumn}>
-                            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>PRICE BAND</Text>
-                            <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-                                {item.min_price ? `₹${item.min_price} - ${item.max_price}` : 'TBA'}
-                            </Text>
+                    <View style={[styles.cardBody, { borderTopColor: theme.colors.border, flexDirection: 'column', gap: 12 }]}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View style={styles.detailColumn}>
+                                <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>OPEN</Text>
+                                <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                                    {item.open_date || 'NA'}
+                                </Text>
+                            </View>
+                            <View style={[styles.detailColumn, { alignItems: 'flex-end' }]}>
+                                <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>CLOSE</Text>
+                                <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                                    {item.close_date || 'NA'}
+                                </Text>
+                            </View>
                         </View>
-                        <View style={[styles.detailColumn, { alignItems: 'flex-end' }]}>
-                            <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Listing Date</Text>
-                            <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-                                {item?.listing_date ? item?.listing_date : 'NA'}
-                            </Text>
+
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View style={styles.detailColumn}>
+                                <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Allotment</Text>
+                                <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                                    {item.allotment_date ? item.allotment_date : 'NA'}
+                                </Text>
+                            </View>
+                            <View style={[styles.detailColumn, { alignItems: 'flex-end' }]}>
+                                <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Listing Date</Text>
+                                <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                                    {item?.listing_date ? item?.listing_date : 'NA'}
+                                </Text>
+                            </View>
                         </View>
                     </View>
 

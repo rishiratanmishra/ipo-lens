@@ -86,6 +86,17 @@ export default function IPOListScreen({ navigation }) {
 
             <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
 
+            <View style={[styles.cardBody, { marginBottom: 12 }]}>
+                <View style={styles.infoCol}>
+                    <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Open</Text>
+                    <Text style={[styles.value, { color: theme.colors.text }]}>{item.open_date || 'NA'}</Text>
+                </View>
+                <View style={styles.infoCol}>
+                    <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Close</Text>
+                    <Text style={[styles.value, { color: theme.colors.text }]}>{item.close_date || 'NA'}</Text>
+                </View>
+            </View>
+
             <View style={styles.cardBody}>
                 <View style={styles.infoCol}>
                     <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Price Band</Text>

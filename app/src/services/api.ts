@@ -171,6 +171,7 @@ export interface MarketIndex {
     change: string;
     percentChange: string;
     isUp: boolean;
+    lastUpdated: string;
 }
 
 export const getMarketIndices = async (): Promise<{ nifty: MarketIndex, sensex: MarketIndex, banknifty: MarketIndex }> => {
@@ -190,13 +191,15 @@ export const getMarketIndices = async (): Promise<{ nifty: MarketIndex, sensex: 
             const prevClose = meta.chartPreviousClose;
             const change = price - prevClose;
             const percentChange = (change / prevClose) * 100;
+            const time = new Date(meta.regularMarketTime * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
             return {
                 name,
                 value: price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
                 change: Math.abs(change).toFixed(2),
                 percentChange: Math.abs(percentChange).toFixed(2) + '%',
-                isUp: change >= 0
+                isUp: change >= 0,
+                lastUpdated: time
             };
         };
 
@@ -208,10 +211,11 @@ export const getMarketIndices = async (): Promise<{ nifty: MarketIndex, sensex: 
     } catch (error) {
         console.error("Error fetching market indices:", error);
         // Return fallback/mock data if fails
+        const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
         return {
-            nifty: { name: 'NIFTY 50', value: '24,142.50', change: '80.50', percentChange: '0.4%', isUp: true },
-            sensex: { name: 'SENSEX', value: '79,500.20', change: '250.20', percentChange: '0.3%', isUp: true },
-            banknifty: { name: 'BANKNIFTY', value: '51,200.50', change: '150.80', percentChange: '0.3%', isUp: true }
+            nifty: { name: 'NIFTY 50', value: '24,142.50', change: '80.50', percentChange: '0.4%', isUp: true, lastUpdated: time },
+            sensex: { name: 'SENSEX', value: '79,500.20', change: '250.20', percentChange: '0.3%', isUp: true, lastUpdated: time },
+            banknifty: { name: 'BANKNIFTY', value: '51,200.50', change: '150.80', percentChange: '0.3%', isUp: true, lastUpdated: time }
         };
     }
 };

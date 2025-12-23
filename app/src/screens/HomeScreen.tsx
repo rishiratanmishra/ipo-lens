@@ -241,14 +241,14 @@ export default function HomeScreen({ navigation }) {
                                     {marketIndices?.nifty.value || 'Loading...'}
                                 </Text>
                             </View>
-                            <View style={[styles.trendBadge, { marginBottom: 20, backgroundColor: (marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
+                            <View style={[styles.trendBadge, { marginBottom: 25, backgroundColor: (marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
                                 <Ionicons
                                     name={marketIndices?.nifty.isUp ? "arrow-up" : "arrow-down"}
                                     size={12}
                                     color={marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error}
                                 />
                                 <Text style={{ fontSize: 10, color: marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error, fontWeight: 'bold' }}>
-                                    {marketIndices?.nifty.percentChange || '0.0%'}
+                                    {marketIndices?.nifty.change} ({marketIndices?.nifty.percentChange || '0.0%'})
                                 </Text>
                             </View>
                         </LinearGradient>
@@ -264,14 +264,14 @@ export default function HomeScreen({ navigation }) {
                                     {marketIndices?.sensex.value || 'Loading...'}
                                 </Text>
                             </View>
-                            <View style={[styles.trendBadge, { marginBottom: 20, backgroundColor: (marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
+                            <View style={[styles.trendBadge, { marginBottom: 25, backgroundColor: (marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
                                 <Ionicons
                                     name={marketIndices?.sensex.isUp ? "arrow-up" : "arrow-down"}
                                     size={12}
                                     color={marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error}
                                 />
                                 <Text style={{ fontSize: 10, color: marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error, fontWeight: 'bold' }}>
-                                    {marketIndices?.sensex.percentChange || '0.0%'}
+                                    {marketIndices?.sensex.change} ({marketIndices?.sensex.percentChange || '0.0%'})
                                 </Text>
                             </View>
                         </LinearGradient>
@@ -287,14 +287,14 @@ export default function HomeScreen({ navigation }) {
                                     {marketIndices?.banknifty.value || 'Loading...'}
                                 </Text>
                             </View>
-                            <View style={[styles.trendBadge, { marginBottom: 20, backgroundColor: (marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
+                            <View style={[styles.trendBadge, { marginBottom: 25, backgroundColor: (marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
                                 <Ionicons
                                     name={marketIndices?.banknifty.isUp ? "arrow-up" : "arrow-down"}
                                     size={12}
                                     color={marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error}
                                 />
                                 <Text style={{ fontSize: 10, color: marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error, fontWeight: 'bold' }}>
-                                    {marketIndices?.banknifty.percentChange || '0.0%'}
+                                    {marketIndices?.banknifty.change} ({marketIndices?.banknifty.percentChange || '0.0%'})
                                 </Text>
                             </View>
                         </LinearGradient>
@@ -389,12 +389,13 @@ const styles = StyleSheet.create({
         padding: 12,
         borderRadius: 16,
         marginRight: 12,
-        width: 160,
+        width: 'auto',
         height: 70,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         borderWidth: 1,
+
     },
     tickerLabel: { fontSize: 10, fontWeight: '700', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
     tickerValue: { fontSize: 16, fontWeight: '700' },

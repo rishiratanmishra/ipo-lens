@@ -111,6 +111,32 @@ export default function IPODetailScreen({ navigation, route }) {
             biddingEnds: ipo?.close_date || 'N/A',
             currentGmp: ipo?.premium ? `₹${parseInt(ipo.premium)}` : (basic['GMP Rumors *'] || '₹0'),
 
+            // Validating GMP and Est Price
+            gmpValue: (() => {
+                const gmpStr = ipo?.premium ? `${ipo.premium}` : (basic['GMP Rumors *'] || '0');
+                return parseFloat(gmpStr.toString().replace(/[₹,]/g, '')) || 0;
+            })(),
+
+            estData: (() => {
+                const priceBandStr = basic['Price'] || ipo?.price_band || '';
+                const cleanStr = (s) => s ? s.toString().replace(/[₹,]/g, '').trim() : '';
+                let upper = 0;
+                if (priceBandStr) {
+                    const parts = cleanStr(priceBandStr).split('-');
+                    const last = parts[parts.length - 1];
+                    upper = parseFloat(last) || 0;
+                }
+
+                const gmpStr = ipo?.premium ? `${ipo.premium}` : (basic['GMP Rumors *'] || '0');
+                const gmpVal = parseFloat(cleanStr(gmpStr)) || 0;
+
+                return {
+                    upperPrice: upper,
+                    percentage: upper > 0 ? ((gmpVal / upper) * 100).toFixed(1) : '0.0',
+                    estPrice: upper > 0 ? (upper + gmpVal) : 0
+                };
+            })(),
+
             timeline: [
                 { title: 'Offer Opens', date: openDate || 'TBA', icon: 'calendar-outline', active: isCompleted(openDate) },
                 { title: 'Offer Closes', date: closeDate || 'TBA', icon: 'timer-outline', active: isCompleted(closeDate) },
@@ -152,7 +178,10 @@ export default function IPODetailScreen({ navigation, route }) {
                 statusColor={statusColor}
             />
 
-            <IPOGMPCard currentGmp={displayData.currentGmp} />
+            <IPOGMPCard
+                gmpValue={displayData.gmpValue}
+                estData={displayData.estData}
+            />
 
             <IPOIssueDetails
                 priceBand={displayData.priceBand}

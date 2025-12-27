@@ -371,7 +371,7 @@ const GMPCard = React.memo(({ item, theme, navigation }: { item: IPO, theme: any
             .trim();
     };
 
-    const { percentage, estListing, fire, isPositive, isNegative } = calculateGmpStats(item);
+    const { percentage, estListing, isPositive, isNegative } = calculateGmpStats(item);
     const displayName = formatCompanyName(item.name);
     const gmpValue = parseInt(item.premium || '0');
     const statusColor = getStatusColor(item.status);
@@ -439,7 +439,7 @@ const GMPCard = React.memo(({ item, theme, navigation }: { item: IPO, theme: any
                     <View style={styles.statBox}>
                         <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>GMP</Text>
                         <View style={styles.gmpRow}>
-                            {fire && <Text style={styles.fireIcon}>🔥</Text>}
+
                             <Text style={[
                                 styles.gmpValue,
                                 { color: isNegative ? theme.colors.error : isPositive ? theme.colors.success : theme.colors.textSecondary }
@@ -680,9 +680,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 4,
     },
-    fireIcon: {
-        fontSize: 14,
-    },
+
     gmpValue: {
         fontSize: 18,
         fontWeight: '800',

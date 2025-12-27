@@ -89,6 +89,16 @@ function ipodetails_admin_page() {
         .status-closed { background: #f6f7f7; color: #646970; }
         .status-upcoming { background: #fff8e5; color: #996800; }
 
+        /* Modal */
+        .ipod-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99999; }
+        .ipod-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; width: 80%; max-width: 900px; height: 80%; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .ipod-modal-header { padding: 15px 20px; border-bottom: 1px solid #eaecf0; background: #f9f9f9; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+        .ipod-modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #646970; }
+        .ipod-modal-body { flex: 1; padding: 0; overflow: hidden; }
+        .ipod-modal-body textarea { width: 100%; height: 100%; border: none; padding: 20px; font-family: monospace; font-size: 12px; resize: none; outline: none; background: #fcfcfc; color: #3c434a; }
+        .ipod-btn-view { background: #2271b1; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .ipod-btn-view:hover { background: #135e96; }
+
         /* Pagination */
         .ipod-pagination { padding: 15px 20px; border-top: 1px solid #eaecf0; background: #fff; display: flex; justify-content: space-between; align-items: center; }
         .page-links a, .page-links span { display: inline-block; padding: 4px 10px; margin-left: 4px; border-radius: 4px; background: #f0f0f1; color: #1d2327; text-decoration: none; font-size: 12px; }
@@ -159,6 +169,7 @@ function ipodetails_admin_page() {
                         <th>Master Status</th>
                         <th>JSON Size</th>
                         <th>Last Fetched</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -170,6 +181,9 @@ function ipodetails_admin_page() {
                             $st = strtoupper($r->status);
                             if(strpos($st, 'OPEN') !== false) $status_class = 'status-open';
                             elseif(strpos($st, 'UPCOMING') !== false) $status_class = 'status-upcoming';
+                            
+                            // Safe Textarea Data
+                            $safe_json = esc_textarea($r->details_json);
                         ?>
                             <tr>
                                 <td><span class="ipod-id">#<?php echo $r->ipo_id; ?></span></td>
@@ -189,10 +203,15 @@ function ipodetails_admin_page() {
                                     <?php echo esc_html($r->fetched_at); ?><br>
                                     <span style="color:#a7aaad; font-size:11px;"><?php echo time_ago($r->fetched_at); ?></span>
                                 </td>
+                                <td>
+                                    <button class="ipod-btn-view" onclick="openModal('<?php echo $r->ipo_id; ?>')">View Data</button>
+                                    <!-- Hidden Data Store -->
+                                    <textarea id="data-<?php echo $r->ipo_id; ?>" style="display:none;"><?php echo $safe_json; ?></textarea>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="5" style="text-align:center; padding: 30px; color: #a7aaad;">No matching records found.</td></tr>
+                        <tr><td colspan="6" style="text-align:center; padding: 30px; color: #a7aaad;">No matching records found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -217,42 +236,75 @@ function ipodetails_admin_page() {
                     </div>
                 </div>
             <?php endif; ?>
-
         </div>
-
     </div>
+
+    <!-- View Data Modal -->
+    <div id="ipod-modal" class="ipod-modal-overlay">
+        <div class="ipod-modal">
+            <div class="ipod-modal-header">
+                <span id="ipod-modal-title">IPO Details Data</span>
+                <button class="ipod-modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="ipod-modal-body">
+                <textarea id="ipod-modal-content" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) {
+            var raw = document.getElementById('data-' + id).value;
+            var nice = raw;
+            try {
+                // Formatting JSON
+                nice = JSON.stringify(JSON.parse(raw), null, 4);
+            } catch(e) { console.error("Invalid JSON"); }
+            
+            document.getElementById('ipod-modal-content').value = nice;
+            document.getElementById('ipod-modal-title').innerText = 'Data View: IPO #' + id;
+            document.getElementById('ipod-modal').style.display = 'block';
+        }
+        function closeModal() {
+            document.getElementById('ipod-modal').style.display = 'none';
+        }
+        // Close on outside click
+        window.onclick = function(event) {
+            var modal = document.getElementById('ipod-modal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 
     <?php
 }
 
 /**
  * Helper function to calculate "Time Ago" string from a datetime.
+ * Uses WordPress human_time_diff for localization and timezone correctness.
  *
  * @param string $datetime The datetime string.
- * @param bool $full Whether to show full details or just the largest unit.
+ * @param bool $full Unused legacy parameter, kept for compatibility.
  * @return string Human-readable time ago string.
  */
 function time_ago($datetime, $full = false) {
-    if(!$datetime) return "Never";
-    $now = new DateTime;
-    $ago = new DateTime($datetime);
-    $diff = $now->diff($ago);
+    if(!$datetime || $datetime === '0000-00-00 00:00:00') return "Never";
+    
+    // Parse the mysql time assuming it is in WP's configured timezone
+    $from = strtotime($datetime); 
+    
+    if (!$from) return "Never";
 
-    $diff->w = floor($diff->d / 7);
-    $diff->d -= $diff->w * 7;
-
-    $string = array(
-        'y' => 'year', 'm' => 'month', 'w' => 'week',
-        'd' => 'day', 'h' => 'hour', 'i' => 'min', 's' => 'sec',
-    );
-    foreach ($string as $k => &$v) {
-        if ($diff->$k) {
-            $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
-        } else {
-            unset($string[$k]);
-        }
-    }
-
-    if (!$full) $string = array_slice($string, 0, 1);
-    return $string ? implode(', ', $string) . ' ago' : 'just now';
+    // current_time('timestamp') retrieves WP local timestamp
+    $to = current_time('timestamp');
+    
+    // If the difference is very small (e.g. 0-60s), showing "1 min ago" via human_time_diff is fine,
+    // but sometimes human_time_diff starts at "1 min".
+    // Let's rely on human_time_diff as it is standard.
+    
+    $diff = human_time_diff($from, $to);
+    
+    return $diff . ' ago';
 }
+

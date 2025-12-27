@@ -186,7 +186,13 @@ export default function BrokerListScreen() {
         </View>
     );
 
-    if (loading) return <ActivityIndicator size="large" color={theme.colors.primary} style={{ flex: 1, marginTop: 50 }} />;
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
+                <ActivityIndicator size="large" color={theme.colors.primary} style={{ flex: 1, marginTop: 50 }} />
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>

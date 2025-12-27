@@ -57,15 +57,12 @@ const IPOOfferDetails: React.FC<IPOOfferDetailsProps> = ({ ipoDetailsMap }) => {
     const renderCardView = () => (
         <View style={styles.gridContainer}>
             {detailsArray.map(([key, value], index) => (
-                <LinearGradient
+                <View
                     key={index}
-                    colors={theme.gradients?.darkCard || [theme.colors.card, theme.colors.surfaceHighlight]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
                     style={[
                         styles.card,
                         {
-                            borderColor: theme.colors.border,
+                            backgroundColor: theme.colors.surfaceHighlight,
                             marginBottom: 12,
                             marginRight: index % 2 === 0 ? '4%' : 0
                         }
@@ -75,10 +72,7 @@ const IPOOfferDetails: React.FC<IPOOfferDetailsProps> = ({ ipoDetailsMap }) => {
                     <Text style={[styles.infoValue, { color: theme.colors.text }]}>
                         {String(value)}
                     </Text>
-
-                    {/* decorative corner accent */}
-                    <View style={[styles.cornerAccent, { backgroundColor: theme.colors.primary, opacity: 0.1 }]} />
-                </LinearGradient>
+                </View>
             ))}
         </View>
     );
@@ -229,19 +223,8 @@ const styles = StyleSheet.create({
     card: {
         width: '48%',
         minHeight: 110,
-        borderRadius: 16,
-        padding: 16,
-        borderWidth: 1,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 4,
-        position: 'relative',
-        overflow: 'hidden',
+        borderRadius: 12,
+        padding: 12,
     },
     infoLabel: {
         fontSize: 12,
@@ -255,14 +238,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
     },
-    cornerAccent: {
-        position: 'absolute',
-        top: -20,
-        right: -20,
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-    }
+
 });
 
 export default IPOOfferDetails;

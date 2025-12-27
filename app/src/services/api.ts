@@ -220,4 +220,47 @@ export const getMarketIndices = async (): Promise<{ nifty: MarketIndex, sensex: 
     }
 };
 
+// IPO Details Interface matching the backend scraper response
+export interface IPODetails {
+    ipo_name: string;
+    dates: string;
+    image: string;
+    basic_details: { [key: string]: string };
+    documents: { title: string; url: string }[];
+    application_breakup: { [key: string]: string }[];
+    subscription_demand: { [key: string]: string }[];
+    subscription: { [key: string]: string }[];
+    qib_interest: string[];
+    lot_distribution: { [key: string]: string }[];
+    reservation: { [key: string]: string }[];
+    ipo_details: { [key: string]: string };
+    kpi: { [key: string]: string }[];
+    peer_valuation: { [key: string]: string }[];
+    peer_financials: { [key: string]: string }[];
+    about_company: string;
+    lead_managers: { name: string }[];
+    address: string;
+    registrar: string;
+}
+
+export const getIPODetails = async (id: number): Promise<IPODetails | null> => {
+    try {
+        const response = await api.get('/get_ipo_details.php', {
+            params: { id }
+        });
+        
+        // Backend returns error object if failed
+        if (response.data.status === 'error' || response.data.error) {
+            console.error("API Error:", response.data.message || response.data.error);
+            return null;
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching IPO Details:", error);
+        return null;
+    }
+};
+
 export default api;
+

@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: IPO Details Pro
- * Description: Fetches IPO detail pages via external scraper API and stores JSON into wp_ipodetails (cron-based, production ready)
- * Version: 1.0
- * Author: Internal
+ * Description: Fetches IPO detail pages via internal scraper and stores JSON into wp_ipodetails (cron-based, production ready)
+ * Version: 1.1
+ * Author: Rishi Ratan Mishra
  */
 
 if (!defined('ABSPATH')) exit;
@@ -14,9 +14,6 @@ global $wpdb;
 
 define("IPOD_MASTER", $wpdb->prefix . "ipomaster");
 define("IPOD_TABLE",  $wpdb->prefix . "ipodetails");
-
-/* External scraper API (your PHP scraper) */
-define("IPOD_SCRAPER_API", "https://zolaha.com/ipo_app/backend_ipo/api/ipo_details.php");
 
 /* ================= ACTIVATE ================= */
 
@@ -47,87 +44,127 @@ register_deactivation_hook(__FILE__, function () {
     wp_clear_scheduled_hook("ipodetails_cron_event");
 });
 
-/* ================= CRON HANDLER ================= */
+/* ================= SCRAPER ================= */
+
+require_once plugin_dir_path(__FILE__) . 'includes/scraper.php';
+
+/* ================= CRON ================= */
 
 add_action("ipodetails_cron_event", "ipodetails_fetch_all");
+add_action("admin_post_ipod_manual_batch", "ipod_manual_fetch_wrapper");
+
+function ipod_manual_fetch_wrapper() {
+    ipodetails_fetch_all();
+    wp_redirect(admin_url("admin.php?page=ipo-details"));
+    exit;
+}
+
+/* ================= CORE LOGIC ================= */
 
 function ipodetails_fetch_all() {
     global $wpdb;
 
-    $ipos = $wpdb->get_results("
-        SELECT id, slug, open_date, close_date, status
-        FROM " . IPOD_MASTER . "
-        WHERE id > 0 AND slug <> ''
-    ");
+    $log_file = plugin_dir_path(__FILE__) . 'includes/debug_ipo.txt';
+    $log = function($msg) use ($log_file) {
+        file_put_contents(
+            $log_file,
+            date("Y-m-d H:i:s") . " - " . $msg . "\n",
+            FILE_APPEND
+        );
+    };
+
+    $log("CRON STARTED");
+
+    $limit = 15;
+
+    /**
+     * ✅ SIMPLE & SAFE SQL
+     * No date parsing
+     * No fragile STR_TO_DATE
+     */
+    $ipos = $wpdb->get_results(
+        $wpdb->prepare(
+            "
+            SELECT 
+                m.id,
+                m.slug,
+                m.status,
+                d.fetched_at
+            FROM " . IPOD_MASTER . " m
+            LEFT JOIN " . IPOD_TABLE . " d 
+                ON m.id = d.ipo_id
+            WHERE
+                d.fetched_at IS NULL
+                OR d.fetched_at < DATE_SUB(NOW(), INTERVAL 1 HOUR)
+            ORDER BY 
+                FIELD(UPPER(m.status),'OPEN','UPCOMING','CLOSED'),
+                m.id DESC
+            LIMIT %d
+            ",
+            $limit
+        )
+    );
+
+    $log("SQL FOUND: " . count($ipos) . " IPOs");
 
     if (!$ipos) return;
 
     foreach ($ipos as $ipo) {
 
-        if (!ipodetails_should_fetch(
-            $ipo->id,
-            $ipo->open_date,
-            $ipo->close_date
-        )) {
+        if (!ipodetails_should_fetch($ipo)) {
             continue;
         }
 
-        $url = IPOD_SCRAPER_API . "?id={$ipo->id}&slug={$ipo->slug}";
+        $log("Fetching IPO ID: {$ipo->id}");
 
-        $response = wp_remote_get($url, [
-            "timeout" => 40,
-            "headers" => [
-                "User-Agent" => "IPO Details Bot"
-            ]
-        ]);
+        $data = fetch_ipo_details_data($ipo->id, $ipo->slug);
 
-        if (is_wp_error($response)) continue;
-
-        $body = wp_remote_retrieve_body($response);
-        $json = json_decode($body, true);
-
-        if (!$json || !isset($json["ipo_name"])) continue;
+        if (!$data || isset($data['error']) || empty($data['ipo_name'])) {
+            $log("FAILED IPO ID: {$ipo->id}");
+            continue;
+        }
 
         $wpdb->replace(IPOD_TABLE, [
             "ipo_id"       => $ipo->id,
             "slug"         => $ipo->slug,
-            "details_json" => wp_json_encode($json, JSON_UNESCAPED_UNICODE),
+            "details_json" => wp_json_encode($data, JSON_UNESCAPED_UNICODE),
             "fetched_at"   => current_time("mysql"),
-            "updated_at"   => current_time("mysql")
+            "updated_at"   => current_time("mysql"),
         ]);
+
+        $log("SUCCESS IPO ID: {$ipo->id}");
     }
 }
 
-/* ================= FETCH LOGIC ================= */
+/* ================= FETCH RULES ================= */
 
-function ipodetails_should_fetch($ipo_id, $open_date, $close_date) {
-    global $wpdb;
+function ipodetails_should_fetch($ipo) {
 
-    $row = $wpdb->get_row(
-        $wpdb->prepare("SELECT fetched_at FROM " . IPOD_TABLE . " WHERE ipo_id = %d", $ipo_id)
-    );
-
-    $now  = time();
-    $last = $row ? strtotime($row->fetched_at) : 0;
-
-    $open_ts  = strtotime($open_date);
-    $close_ts = strtotime($close_date);
-
-    /* UPCOMING → once per day */
-    if ($now < $open_ts) {
-        return ($now - $last) > 86400;
+    if (empty($ipo->fetched_at)) {
+        return true;
     }
 
-    /* OPEN → every 1 hour */
-    if ($now >= $open_ts && $now <= $close_ts) {
+    $now  = time();
+    $last = strtotime($ipo->fetched_at);
+    $status = strtoupper($ipo->status);
+
+    // OPEN → every 1 hour
+    if ($status === 'OPEN') {
         return ($now - $last) > 3600;
     }
 
-    /* CLOSED → only once */
-    return !$row;
+    // UPCOMING → once per day
+    if ($status === 'UPCOMING') {
+        return ($now - $last) > 86400;
+    }
+
+    // CLOSED → fetch only once
+    return false;
 }
 
 /* ================= ADMIN PAGE ================= */
+
+require_once plugin_dir_path(__FILE__) . 'includes/admin-dashboard.php';
 
 add_action("admin_menu", function () {
     add_menu_page(
@@ -140,17 +177,3 @@ add_action("admin_menu", function () {
         27
     );
 });
-
-function ipodetails_admin_page() {
-    global $wpdb;
-
-    $count = $wpdb->get_var("SELECT COUNT(*) FROM " . IPOD_TABLE);
-    $last  = $wpdb->get_var("SELECT MAX(fetched_at) FROM " . IPOD_TABLE);
-
-    echo "<div class='wrap'>";
-    echo "<h1>IPO Details Pro</h1>";
-    echo "<p><strong>Total IPO Details Stored:</strong> {$count}</p>";
-    echo "<p><strong>Last Fetch:</strong> " . ($last ?: "Never") . "</p>";
-    echo "<p>This plugin runs fully via cron. No user scraping.</p>";
-    echo "</div>";
-}

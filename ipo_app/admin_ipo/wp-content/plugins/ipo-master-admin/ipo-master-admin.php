@@ -3,7 +3,7 @@
  * Plugin Name: IPO Master Pro (Admin Control)
  * Description: IPO Premium Scraper + DB + Frontend Table + Full Admin Control
  * Version: 2.0
- * Author: ChatGPT
+ * Author: Rishi Ratan Mishra
  */
 
 if (!defined('ABSPATH')) exit;
@@ -42,7 +42,8 @@ register_activation_hook(__FILE__, function() {
     dbDelta($sql);
 
     if(!wp_next_scheduled("ipom_hourly_event")){
-        wp_schedule_event(time(), "hourly", "ipom_hourly_event");
+        $interval = get_option('ipom_cron_interval', 'hourly');
+        wp_schedule_event(time(), $interval, "ipom_hourly_event");
     }
 });
 
@@ -109,7 +110,9 @@ function ipom_fetch_data(){
     exit;
 }
 
-// ================= ADMIN MENU =================
+// ================= ADMIN MENU & DASHBOARD =================
+require_once plugin_dir_path(__FILE__) . 'includes/admin-dashboard.php';
+
 add_action("admin_menu", function(){
     add_menu_page(
         "IPO Master",
@@ -127,50 +130,9 @@ add_action("admin_menu", function(){
         "IPO Table",
         "manage_options",
         "ipo-master-table",
-        "ipom_admin_table_page"
+        "ipom_admin_table_page" // This function is in includes/admin-dashboard.php
     );
 });
-
-// ================= ADMIN DASHBOARD PAGE =================
-function ipom_dashboard_page(){
-    global $wpdb;
-    $total = $wpdb->get_var("SELECT COUNT(*) FROM ".IPOM_TABLE);
-    $last = get_option("ipom_last_fetch","Never");
-
-    echo "<div class='wrap'><h1>IPO Master Admin</h1>";
-    echo "<p><strong>Total IPO Records:</strong> $total</p>";
-    echo "<p><strong>Last Refetched:</strong> $last</p>";
-
-    echo "<a class='button button-primary' href='".admin_url("admin-post.php?action=ipom_manual_fetch")."'>Fetch Now</a>";
-    echo "</div>";
-}
-
-// ================= ADMIN DATA TABLE =================
-function ipom_admin_table_page(){
-    global $wpdb;
-    $rows = $wpdb->get_results("SELECT * FROM ".IPOM_TABLE." ORDER BY id DESC LIMIT 50");
-
-    echo "<div class='wrap'><h2>IPO Data</h2>";
-    echo "<table class='widefat striped'>";
-    echo "<thead><tr>
-        <th>ID</th><th>Name</th><th>SME?</th>
-        <th>Open</th><th>Close</th><th>Price</th><th>Status</th>
-    </tr></thead><tbody>";
-
-    foreach($rows as $r){
-        echo "<tr>
-            <td>{$r->id}</td>
-            <td>{$r->name}</td>
-            <td>".($r->is_sme ? "SME" : "Mainboard")."</td>
-            <td>{$r->open_date}</td>
-            <td>{$r->close_date}</td>
-            <td>{$r->price_band}</td>
-            <td>{$r->status}</td>
-        </tr>";
-    }
-
-    echo "</tbody></table></div>";
-}
 
 // ================= FRONTEND SHORTCODE =================
 add_shortcode("ipo_master_table", function(){

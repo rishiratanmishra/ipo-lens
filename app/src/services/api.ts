@@ -141,7 +141,8 @@ export const getGMPTrends = async (
     is_sme?: number,
     status?: string,
     minPremium: number = 1,
-    maxPremium?: number
+    maxPremium?: number,
+    sort: 'date' | 'gmp_high' | 'gmp_low' = 'gmp_high' // Default to top gainers
 ): Promise<{ ipos: IPO[], pagination: any }> => {
     try {
         const response = await api.get('/get_gmp_trends.php', {
@@ -151,12 +152,20 @@ export const getGMPTrends = async (
                 is_sme, 
                 status: status || undefined,
                 min_premium: minPremium,
-                max_premium: maxPremium
+                max_premium: maxPremium,
+                sort
             }
         });
         
+        // Transform data to ensure prices are numbers
+        const ipos = (response.data.gmp_trends || []).map((ipo: any) => ({
+            ...ipo,
+            min_price: parseFloat(ipo.min_price) || 0,
+            max_price: parseFloat(ipo.max_price) || 0,
+        }));
+
         return {
-            ipos: response.data.gmp_trends || [],
+            ipos,
             pagination: response.data.pagination || {}
         };
     } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Image, Dimensions, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,7 +7,8 @@ import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
 import { getIPOs, getGMPTrends, IPO } from '../services/api';
 import SegmentedControl from '../components/common/SegmentedControl';
-import FilterChips from '../components/common/FilterChips';
+
+const { width } = Dimensions.get('window');
 
 export default function GMPListScreen({ navigation }) {
     const { theme } = useTheme();
@@ -16,12 +17,13 @@ export default function GMPListScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [filterVisible, setFilterVisible] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState<string>('');
     const [selectedMinPremium, setSelectedMinPremium] = useState<number>(1);
     const [selectedMaxPremium, setSelectedMaxPremium] = useState<number | undefined>(undefined);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [filterModalVisible, setFilterModalVisible] = useState(false);
+    const [sortBy, setSortBy] = useState<'gmp_high' | 'gmp_low'>('gmp_high'); // Top Gainers by default
 
     const fetchIPOs = useCallback(async (pageNumber: number, shouldAppend: boolean = false) => {
         if (shouldAppend) {
@@ -38,7 +40,8 @@ export default function GMPListScreen({ navigation }) {
                 activeTab === 'SME' ? 1 : 0,
                 selectedStatus,
                 selectedMinPremium,
-                selectedMaxPremium
+                selectedMaxPremium,
+                sortBy
             );
 
             if (shouldAppend) {
@@ -56,7 +59,7 @@ export default function GMPListScreen({ navigation }) {
             setLoadingMore(false);
             setRefreshing(false);
         }
-    }, [activeTab, selectedStatus, selectedMinPremium, selectedMaxPremium]);
+    }, [activeTab, selectedStatus, selectedMinPremium, selectedMaxPremium, sortBy]);
 
     useEffect(() => {
         fetchIPOs(1, false);
@@ -73,114 +76,49 @@ export default function GMPListScreen({ navigation }) {
         }
     };
 
-    const handleFilterSelect = (status: string) => {
-        setSelectedStatus(status);
-        setFilterVisible(false);
-    };
+    const renderItem = useCallback(({ item }: { item: IPO }) => (
+        <GMPCard item={item} theme={theme} navigation={navigation} />
+    ), [theme, navigation]);
 
-    const getStatusColor = (status: string) => {
-        switch (status?.toUpperCase()) {
-            case 'OPEN': return theme.colors.success;
-            case 'UPCOMING': return theme.colors.accent;
-            case 'CLOSED': return theme.colors.error;
-            case 'LISTED': return theme.colors.textSecondary;
-            default: return theme.colors.text;
-        }
-    };
+    const hasActiveFilters = selectedStatus !== '' || selectedMinPremium > 1 || selectedMaxPremium !== undefined;
 
-    const calculateGmpStats = (item: IPO) => {
-        const gmp = parseFloat(item.premium || '0');
-        const price = item.max_price || 0; // Fallback to max_price
-
-        let percentage = '0%';
-        let estListing = '₹0';
-
-        // If the premium string contains percentage (e.g. "47 (67.1%)"), we could extract it.
-        // But calculating it ensures consistency with local price data.
-        if (price > 0) {
-            const pct = ((gmp / price) * 100).toFixed(2);
-            percentage = `${pct}%`;
-            estListing = `₹${price + gmp}`;
-        }
-
-        // Fallback: search for parens in premium string
-        if (item.premium && item.premium.includes('(')) {
-            const match = item.premium.match(/\((.*?)%\)/);
-            if (match) {
-                percentage = match[1] + '%';
-            }
-        }
-
-        return { percentage, estListing, fire: parseFloat(percentage) > 50 };
-    };
-
-    const formatCompanyName = (name: string) => {
-        if (!name) return '';
-        return name
-            .replace(/ (Limited|Ltd\.?|Pvt\.?|Private|IPO)$/i, '')
-            .replace(/ (Limited|Ltd\.?|Pvt\.?|Private|IPO)$/i, '')
-            .trim();
-    };
-
-    const renderItem = ({ item }: { item: IPO }) => {
-        const { percentage, estListing, fire } = calculateGmpStats(item);
-        const displayName = formatCompanyName(item.name);
-
-        return (
-            <TouchableOpacity
-                style={[styles.card, { backgroundColor: theme.colors.surfaceHighlight }]}
-                onPress={() => navigation.navigate('IPODetail', { ipo: item })}
-            >
-                <View style={[styles.cardLeft, { maxWidth: '65%' }]}>
-                    <View style={[styles.logoPlaceholder, { backgroundColor: theme.colors.surface }]}>
-                        {item.icon_url ? (
-                            <Image
-                                source={{ uri: item.icon_url }}
-                                style={styles.logoImage}
-                                resizeMode="contain"
-                            />
-                        ) : (
-                            <Text style={[styles.logoText, { color: theme.colors.text }]}>
-                                {displayName.substring(0, 1) || '?'}
-                            </Text>
-                        )}
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[styles.companyName, { color: theme.colors.text }]} numberOfLines={1}>
-                            {displayName}
-                        </Text>
-                        <Text style={[styles.priceRange, { color: theme.colors.textSecondary }]}>
-                            {item.min_price ? `₹${item.min_price} - ${item.max_price}` : 'Price TBA'}
-                        </Text>
-                        <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                            ● {(item.status).toUpperCase()}
-                        </Text>
-                    </View>
-                </View>
-                <View style={styles.cardRight}>
-                    <View style={styles.gmpRow}>
-                        {fire && <Text>🔥</Text>}
-                        <Text style={[styles.gmpValue, { color: theme.colors.success }]}>₹{parseInt(item.premium || '0')}</Text>
-                    </View>
-                    <Text style={[styles.gmpChange, { color: theme.colors.success }]}>{percentage}</Text>
-                    <Text style={[styles.estListing, { color: theme.colors.textSecondary }]}>Est: {estListing}</Text>
-                </View>
-            </TouchableOpacity>
-        );
+    const clearFilters = () => {
+        setSelectedStatus('');
+        setSelectedMinPremium(1);
+        setSelectedMaxPremium(undefined);
     };
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={[styles.headerTitle, { color: theme.colors.text }]}>GMP Trends</Text>
+                <View>
+                    <Text style={[styles.headerTitle, { color: theme.colors.text }]}>GMP Trends</Text>
+                    <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
+                        Grey Market Premium Tracker
+                    </Text>
+                </View>
                 <View style={styles.headerRight}>
-                    <View style={[styles.updateBadge, { backgroundColor: theme.colors.surfaceHighlight }]}>
-                        <Ionicons name="time-outline" size={12} color={theme.colors.textSecondary} />
-                        <Text style={[styles.updateText, { color: theme.colors.textSecondary }]}>Live</Text>
+                    <View style={[styles.updateBadge, { backgroundColor: theme.colors.success + '20', borderColor: theme.colors.success + '40', borderWidth: 1 }]}>
+                        <View style={[styles.liveDot, { backgroundColor: theme.colors.success }]} />
+                        <Text style={[styles.updateText, { color: theme.colors.success }]}>Live</Text>
                     </View>
-                    <TouchableOpacity style={styles.iconButton}>
-                        <Ionicons name="search" size={20} color={theme.colors.text} />
+                    <TouchableOpacity
+                        style={[styles.filterButton, {
+                            backgroundColor: hasActiveFilters ? theme.colors.primary + '20' : theme.colors.surfaceHighlight,
+                            borderColor: hasActiveFilters ? theme.colors.primary : theme.colors.border,
+                            borderWidth: 1
+                        }]}
+                        onPress={() => setFilterModalVisible(true)}
+                    >
+                        <Ionicons
+                            name="filter"
+                            size={18}
+                            color={hasActiveFilters ? theme.colors.primary : theme.colors.text}
+                        />
+                        {hasActiveFilters && (
+                            <View style={[styles.filterDot, { backgroundColor: theme.colors.primary }]} />
+                        )}
                     </TouchableOpacity>
                 </View>
             </View>
@@ -192,52 +130,30 @@ export default function GMPListScreen({ navigation }) {
                 onTabChange={setActiveTab}
             />
 
-            {/* Filter Chips */}
-            <View style={styles.filterSection}>
-                <FilterChips
-                    label="Status"
-                    options={['All', 'OPEN', 'UPCOMING', 'CLOSED', 'LISTED']}
-                    selectedValue={selectedStatus === '' ? 'All' : selectedStatus}
-                    onSelect={(value) => setSelectedStatus(value === 'All' ? '' : value)}
-                />
-
-                <FilterChips
-                    label="Premium Range"
-                    options={['All', '₹50-100', '₹100-200', '₹200+']}
-                    selectedValue={
-                        selectedMinPremium === 1 && selectedMaxPremium === undefined ? 'All' :
-                            selectedMinPremium === 50 && selectedMaxPremium === 100 ? '₹50-100' :
-                                selectedMinPremium === 100 && selectedMaxPremium === 200 ? '₹100-200' :
-                                    selectedMinPremium === 200 && selectedMaxPremium === undefined ? '₹200+' : 'All'
-                    }
-                    onSelect={(value) => {
-                        if (value === 'All') {
-                            setSelectedMinPremium(1);
-                            setSelectedMaxPremium(undefined);
-                        } else if (value === '₹50-100') {
-                            setSelectedMinPremium(50);
-                            setSelectedMaxPremium(100);
-                        } else if (value === '₹100-200') {
-                            setSelectedMinPremium(100);
-                            setSelectedMaxPremium(200);
-                        } else if (value === '₹200+') {
-                            setSelectedMinPremium(200);
-                            setSelectedMaxPremium(undefined);
-                        }
-                    }}
-                    containerStyle={{ marginTop: 12 }}
-                />
-            </View>
-
             {/* List Header */}
             <View style={styles.listHeaderRow}>
-                <Text style={[styles.listHeaderTitle, { color: theme.colors.text }]}>
-                    {selectedStatus ? `${selectedStatus} IPOs` : 'Top Gainers'}
-                </Text>
+                <View>
+                    <Text style={[styles.listHeaderTitle, { color: theme.colors.text }]}>
+                        {selectedStatus ? `${selectedStatus} IPOs` : sortBy === 'gmp_high' ? 'Top Gainers' : 'Top Losers'}
+                    </Text>
+                </View>
+                <TouchableOpacity
+                    style={[styles.sortButton, { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border, borderWidth: 1 }]}
+                    onPress={() => setSortBy(sortBy === 'gmp_high' ? 'gmp_low' : 'gmp_high')}
+                >
+                    <Ionicons
+                        name={sortBy === 'gmp_high' ? "trending-up" : "trending-down"}
+                        size={16}
+                        color={sortBy === 'gmp_high' ? theme.colors.success : theme.colors.error}
+                    />
+                    <Text style={[styles.sortButtonText, { color: theme.colors.text }]}>
+                        {sortBy === 'gmp_high' ? 'Gainers' : 'Losers'}
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             {loading ? (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <View style={styles.centerContainer}>
                     <ActivityIndicator size="large" color={theme.colors.primary} />
                 </View>
             ) : (
@@ -251,8 +167,12 @@ export default function GMPListScreen({ navigation }) {
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
                     }
                     ListEmptyComponent={
-                        <View style={{ alignItems: 'center', marginTop: 50 }}>
-                            <Text style={{ color: theme.colors.textSecondary }}>No GMP data available</Text>
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="trending-up-outline" size={64} color={theme.colors.textTertiary} />
+                            <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>No GMP Data Available</Text>
+                            <Text style={[styles.emptySubtitle, { color: theme.colors.textSecondary }]}>
+                                Try adjusting your filters or check back later
+                            </Text>
                         </View>
                     }
                     onEndReached={handleLoadMore}
@@ -267,77 +187,121 @@ export default function GMPListScreen({ navigation }) {
                 />
             )}
 
+            {/* Filter Modal */}
             <Modal
-                animationType="fade"
+                animationType="slide"
                 transparent={true}
-                visible={filterVisible}
-                onRequestClose={() => setFilterVisible(false)}
+                visible={filterModalVisible}
+                onRequestClose={() => setFilterModalVisible(false)}
             >
                 <TouchableOpacity
                     style={styles.modalOverlay}
                     activeOpacity={1}
-                    onPress={() => setFilterVisible(false)}
+                    onPress={() => setFilterModalVisible(false)}
                 >
-                    <View style={[styles.modalContent, { backgroundColor: theme.colors.surfaceHighlight }]}>
+                    <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
+                        {/* Modal Header */}
                         <View style={styles.modalHeader}>
                             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Filters</Text>
-                            {(selectedStatus !== '' || selectedMinPremium > 1 || selectedMaxPremium !== undefined) && (
-                                <TouchableOpacity onPress={() => {
-                                    setSelectedStatus('');
-                                    setSelectedMinPremium(1);
-                                    setSelectedMaxPremium(undefined);
-                                    setFilterVisible(false);
-                                }}>
-                                    <Text style={{ color: theme.colors.error, fontSize: 14 }}>Clear All</Text>
+                            <View style={styles.modalHeaderActions}>
+                                {hasActiveFilters && (
+                                    <TouchableOpacity onPress={clearFilters} style={styles.clearButton}>
+                                        <Text style={[styles.clearButtonText, { color: theme.colors.error }]}>Clear All</Text>
+                                    </TouchableOpacity>
+                                )}
+                                <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
+                                    <Ionicons name="close" size={24} color={theme.colors.text} />
                                 </TouchableOpacity>
-                            )}
+                            </View>
                         </View>
 
-                        <Text style={[styles.filterSectionTitle, { color: theme.colors.textSecondary }]}>Status</Text>
-                        {['', 'OPEN', 'UPCOMING', 'CLOSED'].map((status) => (
-                            <TouchableOpacity
-                                key={status}
-                                style={[styles.modalOption, { borderBottomColor: theme.colors.border }]}
-                                onPress={() => {
-                                    setSelectedStatus(status);
-                                }}
-                            >
-                                <Text style={[styles.modalOptionText, { color: theme.colors.text }]}>
-                                    {status === '' ? 'All Statuses' : status}
-                                </Text>
-                                {selectedStatus === status && (
-                                    <Ionicons name="checkmark" size={20} color={theme.colors.primary} />
-                                )}
-                            </TouchableOpacity>
-                        ))}
+                        {/* Filter Content */}
+                        <View style={styles.filterContent}>
+                            {/* Status Filter */}
+                            <View style={styles.filterGroup}>
+                                <Text style={[styles.filterGroupTitle, { color: theme.colors.text }]}>Status</Text>
+                                <View style={styles.filterChipsWrapper}>
+                                    {['All', 'OPEN', 'UPCOMING', 'CLOSED', 'LISTED'].map((status) => (
+                                        <TouchableOpacity
+                                            key={status}
+                                            style={[
+                                                styles.filterChip,
+                                                {
+                                                    backgroundColor: (selectedStatus === '' && status === 'All') || selectedStatus === status
+                                                        ? '#34D39920'
+                                                        : theme.colors.surfaceHighlight,
+                                                    borderColor: (selectedStatus === '' && status === 'All') || selectedStatus === status
+                                                        ? '#34D399'
+                                                        : theme.colors.border,
+                                                }
+                                            ]}
+                                            onPress={() => setSelectedStatus(status === 'All' ? '' : status)}
+                                        >
+                                            <Text style={[
+                                                styles.filterChipText,
+                                                {
+                                                    color: (selectedStatus === '' && status === 'All') || selectedStatus === status
+                                                        ? '#059669'
+                                                        : theme.colors.textSecondary
+                                                }
+                                            ]}>
+                                                {status}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
 
-                        <Text style={[styles.filterSectionTitle, { color: theme.colors.textSecondary, marginTop: 16 }]}>Premium Range</Text>
-                        {[
-                            { label: 'All (> ₹0)', min: 1, max: undefined },
-                            { label: 'Medium (₹50 - ₹100)', min: 50, max: 100 },
-                            { label: 'High (₹100 - ₹200)', min: 100, max: 200 },
-                            { label: 'Very High (> ₹200)', min: 200, max: undefined },
-                        ].map((option) => (
-                            <TouchableOpacity
-                                key={option.label}
-                                style={[styles.modalOption, { borderBottomColor: theme.colors.border }]}
-                                onPress={() => {
-                                    setSelectedMinPremium(option.min);
-                                    setSelectedMaxPremium(option.max);
-                                }}
-                            >
-                                <Text style={[styles.modalOptionText, { color: theme.colors.text }]}>{option.label}</Text>
-                                {selectedMinPremium === option.min && selectedMaxPremium === option.max && (
-                                    <Ionicons name="checkmark" size={20} color={theme.colors.primary} />
-                                )}
-                            </TouchableOpacity>
-                        ))}
+                            {/* Premium Range Filter */}
+                            <View style={styles.filterGroup}>
+                                <Text style={[styles.filterGroupTitle, { color: theme.colors.text }]}>Premium Range</Text>
+                                <View style={styles.filterChipsWrapper}>
+                                    {[
+                                        { label: 'All', min: 1, max: undefined },
+                                        { label: '₹50-100', min: 50, max: 100 },
+                                        { label: '₹100-200', min: 100, max: 200 },
+                                        { label: '₹200+', min: 200, max: undefined },
+                                    ].map((option) => (
+                                        <TouchableOpacity
+                                            key={option.label}
+                                            style={[
+                                                styles.filterChip,
+                                                {
+                                                    backgroundColor: selectedMinPremium === option.min && selectedMaxPremium === option.max
+                                                        ? '#34D39920'
+                                                        : theme.colors.surfaceHighlight,
+                                                    borderColor: selectedMinPremium === option.min && selectedMaxPremium === option.max
+                                                        ? '#34D399'
+                                                        : theme.colors.border,
+                                                }
+                                            ]}
+                                            onPress={() => {
+                                                setSelectedMinPremium(option.min);
+                                                setSelectedMaxPremium(option.max);
+                                            }}
+                                        >
+                                            <Text style={[
+                                                styles.filterChipText,
+                                                {
+                                                    color: selectedMinPremium === option.min && selectedMaxPremium === option.max
+                                                        ? '#059669'
+                                                        : theme.colors.textSecondary
+                                                }
+                                            ]}>
+                                                {option.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        </View>
 
+                        {/* Apply Button */}
                         <TouchableOpacity
-                            style={[styles.applyButton, { backgroundColor: theme.colors.primary }]}
-                            onPress={() => setFilterVisible(false)}
+                            style={[styles.applyButton, { backgroundColor: '#34D399' }]}
+                            onPress={() => setFilterModalVisible(false)}
                         >
-                            <Text style={styles.applyButtonText}>Done</Text>
+                            <Text style={styles.applyButtonText}>Apply Filters</Text>
                         </TouchableOpacity>
                     </View>
                 </TouchableOpacity>
@@ -346,19 +310,203 @@ export default function GMPListScreen({ navigation }) {
     );
 }
 
+// Memoized Card Component for better performance
+const GMPCard = React.memo(({ item, theme, navigation }: { item: IPO, theme: any, navigation: any }) => {
+    const getStatusColor = (status: string) => {
+        switch (status?.toUpperCase()) {
+            case 'OPEN': return theme.colors.success;
+            case 'UPCOMING': return theme.colors.accent;
+            case 'CLOSED': return theme.colors.error;
+            case 'LISTED': return theme.colors.textSecondary;
+            default: return theme.colors.text;
+        }
+    };
+
+    const getStatusBgColor = (status: string) => {
+        switch (status?.toUpperCase()) {
+            case 'OPEN': return theme.colors.success + '15';
+            case 'UPCOMING': return theme.colors.accent + '15';
+            case 'CLOSED': return theme.colors.error + '15';
+            case 'LISTED': return theme.colors.textSecondary + '15';
+            default: return theme.colors.surfaceHighlight;
+        }
+    };
+
+    const calculateGmpStats = (item: IPO) => {
+        const gmp = parseFloat(item.premium || '0');
+        const price = item.max_price || item.min_price || 0;
+
+        let percentage = '0';
+        let estListing: number = 0;
+
+        if (price > 0) {
+            const pct = ((gmp / price) * 100).toFixed(1);
+            percentage = pct;
+            estListing = price + gmp;
+        }
+
+        // Fallback: search for parens in premium string
+        if (item.premium && item.premium.includes('(')) {
+            const match = item.premium.match(/\((.*?)%\)/);
+            if (match) {
+                percentage = match[1];
+            }
+        }
+
+        const pctNum = parseFloat(percentage);
+        return {
+            percentage,
+            estListing,
+            fire: pctNum > 50,
+            isPositive: gmp > 0,
+            isNegative: gmp < 0
+        };
+    };
+
+    const formatCompanyName = (name: string) => {
+        if (!name) return '';
+        return name
+            .replace(/ (Limited|Ltd\.?|Pvt\.?|Private|IPO)$/i, '')
+            .replace(/ (Limited|Ltd\.?|Pvt\.?|Private|IPO)$/i, '')
+            .trim();
+    };
+
+    const { percentage, estListing, fire, isPositive, isNegative } = calculateGmpStats(item);
+    const displayName = formatCompanyName(item.name);
+    const gmpValue = parseInt(item.premium || '0');
+    const statusColor = getStatusColor(item.status);
+    const statusBgColor = getStatusBgColor(item.status);
+
+    return (
+        <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('IPODetail', { ipo: item })}
+            style={{ marginBottom: 16 }}
+        >
+            <LinearGradient
+                colors={theme.gradients.darkCard}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.card, { borderColor: theme.colors.border }]}
+            >
+                {/* Top Section - Company Info */}
+                <View style={styles.cardHeader}>
+                    <View style={styles.companySection}>
+                        <View style={[styles.logoContainer, { backgroundColor: theme.colors.surface }]}>
+                            {item.icon_url ? (
+                                <Image
+                                    source={{ uri: item.icon_url }}
+                                    style={styles.logoImage}
+                                    resizeMode="contain"
+                                />
+                            ) : (
+                                <Text style={[styles.logoText, { color: theme.colors.text }]}>
+                                    {displayName.substring(0, 1) || '?'}
+                                </Text>
+                            )}
+                        </View>
+                        <View style={styles.companyInfo}>
+                            <Text style={[styles.companyName, { color: theme.colors.text }]} numberOfLines={1}>
+                                {displayName}
+                            </Text>
+                            <View style={styles.priceRow}>
+                                <View style={[styles.priceBadge, { backgroundColor: theme.colors.text + '10' }]}>
+                                    <Text style={[styles.priceLabel, { color: theme.colors.textSecondary }]}>
+                                        Price Band
+                                    </Text>
+                                </View>
+                                <Text style={[styles.priceValue, { color: theme.colors.textSecondary }]}>
+                                    {item.min_price ? `₹${item.min_price} - ${item.max_price}` : 'TBA'}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Status Badge */}
+                    <View style={[styles.statusBadge, { backgroundColor: statusBgColor, borderColor: statusColor + '40', borderWidth: 1 }]}>
+                        <Text style={[styles.statusText, { color: statusColor }]}>
+                            {item.status.toUpperCase()}
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Divider */}
+                <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+
+                {/* Bottom Section - GMP Stats */}
+                <View style={styles.statsSection}>
+                    {/* GMP Premium */}
+                    <View style={styles.statBox}>
+                        <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>GMP</Text>
+                        <View style={styles.gmpRow}>
+                            {fire && <Text style={styles.fireIcon}>🔥</Text>}
+                            <Text style={[
+                                styles.gmpValue,
+                                { color: isNegative ? theme.colors.error : isPositive ? theme.colors.success : theme.colors.textSecondary }
+                            ]}>
+                                {isNegative ? '-₹' : '₹'}{Math.abs(gmpValue)}
+                            </Text>
+                        </View>
+                    </View>
+
+                    {/* Gain Percentage */}
+                    <View style={styles.statBox}>
+                        <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Gain</Text>
+                        <View style={[
+                            styles.percentageBadge,
+                            { backgroundColor: isNegative ? theme.colors.error + '15' : isPositive ? theme.colors.success + '15' : theme.colors.surfaceHighlight }
+                        ]}>
+                            <Ionicons
+                                name={isNegative ? "trending-down" : isPositive ? "trending-up" : "remove"}
+                                size={14}
+                                color={isNegative ? theme.colors.error : isPositive ? theme.colors.success : theme.colors.textSecondary}
+                            />
+                            <Text style={[
+                                styles.percentageText,
+                                { color: isNegative ? theme.colors.error : isPositive ? theme.colors.success : theme.colors.textSecondary }
+                            ]}>
+                                {percentage}%
+                            </Text>
+                        </View>
+                    </View>
+
+                    {/* Est. Listing */}
+                    <View style={styles.statBox}>
+                        <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Est. Listing</Text>
+                        <Text style={[styles.estListingValue, { color: theme.colors.text }]}>
+                            {typeof estListing === 'number' && !isNaN(estListing) && estListing >= 0 ? `₹${Math.round(estListing)}` : 'TBA'}
+                        </Text>
+                    </View>
+                </View>
+            </LinearGradient>
+        </TouchableOpacity>
+    );
+});
+
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: defaultTheme.colors.background },
+    container: {
+        flex: 1,
+        backgroundColor: defaultTheme.colors.background
+    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: defaultTheme.spacing.md,
-        paddingVertical: defaultTheme.spacing.sm,
+        paddingHorizontal: 20,
+        paddingTop: 10,
+        paddingBottom: 16,
     },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
+        fontSize: 28,
+        fontWeight: '800',
+        letterSpacing: -0.5,
         color: defaultTheme.colors.text,
+    },
+    headerSubtitle: {
+        fontSize: 13,
+        fontWeight: '500',
+        marginTop: 2,
+        color: defaultTheme.colors.textSecondary,
     },
     headerRight: {
         flexDirection: 'row',
@@ -368,203 +516,302 @@ const styles = StyleSheet.create({
     updateBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
-        backgroundColor: defaultTheme.colors.surfaceHighlight,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
+        gap: 6,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 20,
+    },
+    liveDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
     },
     updateText: {
-        fontSize: 10,
-        color: defaultTheme.colors.textSecondary,
+        fontSize: 11,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
-    iconButton: {
-        padding: 4,
-    },
-    heroCard: {
-        margin: defaultTheme.spacing.md,
-        padding: 20,
-        backgroundColor: 'rgba(52, 211, 153, 0.1)', // Light green tint
-        borderRadius: 16,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(52, 211, 153, 0.3)',
-    },
-    heroLabel: {
-        color: defaultTheme.colors.success,
-        fontSize: 10,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    heroTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: defaultTheme.colors.text,
-        marginBottom: 2,
-    },
-    heroSubtitle: {
-        color: defaultTheme.colors.textSecondary,
-        fontSize: 12,
-    },
-    moodIcon: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: defaultTheme.colors.surfaceHighlight,
-        justifyContent: 'center',
-        alignItems: 'center',
+    filterSection: {
+        paddingHorizontal: 20,
+        paddingVertical: 12,
     },
     listHeaderRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: defaultTheme.spacing.md,
-        marginBottom: defaultTheme.spacing.sm,
+        paddingHorizontal: 20,
+        marginBottom: 12,
+        marginTop: 8,
     },
     listHeaderTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 20,
+        fontWeight: '700',
         color: defaultTheme.colors.text,
     },
+    listHeaderSubtitle: {
+        fontSize: 12,
+        fontWeight: '500',
+        marginTop: 2,
+        color: defaultTheme.colors.textSecondary,
+    },
+    sortButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+    },
+    sortButtonText: {
+        fontSize: 13,
+        fontWeight: '600',
+    },
     listContent: {
-        paddingHorizontal: defaultTheme.spacing.md,
-        paddingBottom: 20,
+        paddingHorizontal: 20,
+        paddingBottom: 100,
     },
     card: {
+        borderRadius: 20,
+        borderWidth: 1,
+        overflow: 'hidden',
+        position: 'relative',
+        // Shadow for iOS
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        // Elevation for Android
+        elevation: 5,
+    },
+    cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: defaultTheme.colors.surfaceHighlight,
+        alignItems: 'flex-start',
         padding: 16,
-        borderRadius: 16,
-        marginBottom: 12,
     },
-    cardLeft: {
+    companySection: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
         flex: 1,
+        marginRight: 12,
     },
-    logoPlaceholder: {
-        width: 40,
-        height: 40,
-        borderRadius: 8,
-        backgroundColor: defaultTheme.colors.surface,
+    logoContainer: {
+        width: 48,
+        height: 48,
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: 12,
     },
     logoImage: {
         width: '100%',
         height: '100%',
-        borderRadius: 8,
-        color: defaultTheme.colors.text,
+        borderRadius: 12,
         backgroundColor: defaultTheme.colors.white,
     },
     logoText: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: defaultTheme.colors.text,
+    },
+    companyInfo: {
+        flex: 1,
     },
     companyName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: defaultTheme.colors.text,
-        marginBottom: 2,
+        fontSize: 17,
+        fontWeight: '700',
+        marginBottom: 6,
+        letterSpacing: -0.3,
     },
-    priceRange: {
+    priceRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    priceBadge: {
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+    },
+    priceLabel: {
+        fontSize: 9,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.3,
+    },
+    priceValue: {
         fontSize: 12,
-        color: defaultTheme.colors.textSecondary,
-        marginBottom: 2,
+        fontWeight: '600',
+    },
+    statusBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 100,
     },
     statusText: {
-        fontSize: 10,
-        fontWeight: 'bold',
+        fontSize: 9,
+        fontWeight: '800',
+        letterSpacing: 0.5,
     },
-    cardRight: {
-        alignItems: 'flex-end',
+    divider: {
+        height: 1,
+        marginHorizontal: 16,
+        opacity: 0.3,
+    },
+    statsSection: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+    },
+    statBox: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    statLabel: {
+        fontSize: 10,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 6,
     },
     gmpRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
     },
+    fireIcon: {
+        fontSize: 14,
+    },
     gmpValue: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: defaultTheme.colors.success,
+        fontSize: 18,
+        fontWeight: '800',
+        letterSpacing: -0.5,
     },
-    gmpChange: {
-        fontSize: 12,
-        color: defaultTheme.colors.success,
-        marginBottom: 2,
+    percentageBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
     },
-    estListing: {
-        fontSize: 10,
-        color: defaultTheme.colors.textSecondary,
+    percentageText: {
+        fontSize: 14,
+        fontWeight: '700',
     },
-    modalOverlay: {
+    estListingValue: {
+        fontSize: 15,
+        fontWeight: '700',
+    },
+    centerContainer: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
         alignItems: 'center',
     },
+    emptyContainer: {
+        alignItems: 'center',
+        marginTop: 80,
+        paddingHorizontal: 40,
+    },
+    emptyTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginTop: 16,
+        marginBottom: 8,
+    },
+    emptySubtitle: {
+        fontSize: 14,
+        textAlign: 'center',
+        lineHeight: 20,
+    },
+    filterButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    filterDot: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'flex-end',
+    },
     modalContent: {
-        width: '80%',
-        backgroundColor: defaultTheme.colors.surfaceHighlight,
-        borderRadius: 24,
-        padding: 24,
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        paddingTop: 20,
+        paddingBottom: 40,
+        paddingHorizontal: 20,
+        maxHeight: '80%',
     },
     modalHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 24,
     },
     modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: defaultTheme.colors.text,
+        fontSize: 24,
+        fontWeight: '800',
     },
-    modalOption: {
+    modalHeaderActions: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 14,
-        borderBottomWidth: 1,
-        borderBottomColor: defaultTheme.colors.border,
+        gap: 16,
     },
-    modalOptionText: {
-        fontSize: 16,
-        color: defaultTheme.colors.text,
-        fontWeight: '500',
+    clearButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
     },
-    filterSectionTitle: {
+    clearButtonText: {
         fontSize: 14,
-        fontWeight: 'bold',
-        marginTop: 8,
-        marginBottom: 4,
-        textTransform: 'uppercase',
+        fontWeight: '600',
+    },
+    filterContent: {
+        marginBottom: 20,
+    },
+    filterGroup: {
+        marginBottom: 24,
+    },
+    filterGroupTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 12,
+    },
+    filterChipsWrapper: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+    },
+    filterChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 100,
+        borderWidth: 1,
+    },
+    filterChipText: {
+        fontSize: 14,
+        fontWeight: '600',
     },
     applyButton: {
-        marginTop: 20,
-        paddingVertical: 12,
-        borderRadius: 12,
+        paddingVertical: 16,
+        borderRadius: 16,
         alignItems: 'center',
+        marginTop: 10,
     },
     applyButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
-    },
-    filterSection: {
-        paddingHorizontal: defaultTheme.spacing.md,
-        paddingVertical: defaultTheme.spacing.sm,
+        fontWeight: '700',
     },
 });

@@ -13,7 +13,7 @@ const WelcomeScreen = ({ navigation }) => {
 
     return (
         <View style={{ flex: 1 }}>
-            <StatusBar style={isDark ? 'light' : 'dark'} />
+            <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor="transparent" translucent />
             <LinearGradient
                 colors={theme.gradients.background}
                 style={styles.background}

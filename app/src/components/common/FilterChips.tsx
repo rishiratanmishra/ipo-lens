@@ -31,10 +31,10 @@ export default function FilterChips({ options, selectedValue, onSelect, containe
                             styles.chip,
                             {
                                 backgroundColor: selectedValue === option
-                                    ? theme.colors.primary
+                                    ? '#34D39920'
                                     : theme.colors.surfaceHighlight,
                                 borderColor: selectedValue === option
-                                    ? theme.colors.primary
+                                    ? '#34D399'
                                     : theme.colors.border,
                             }
                         ]}
@@ -44,7 +44,7 @@ export default function FilterChips({ options, selectedValue, onSelect, containe
                                 styles.chipText,
                                 {
                                     color: selectedValue === option
-                                        ? '#000'
+                                        ? '#059669'
                                         : theme.colors.textSecondary
                                 }
                             ]}

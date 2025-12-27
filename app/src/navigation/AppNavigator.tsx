@@ -44,7 +44,10 @@ function RootNavigator() {
 
     return (
         <>
-            <StatusBar style={isDark ? "light" : "dark"} />
+            <StatusBar
+                style={isDark ? "light" : "dark"}
+                backgroundColor={theme.colors.background}
+            />
             <Stack.Navigator
                 id="RootStack"
                 screenOptions={{

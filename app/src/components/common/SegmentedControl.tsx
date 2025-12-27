@@ -31,10 +31,10 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, contain
                                 styles.scrollableSegment,
                                 {
                                     backgroundColor: activeTab === tab
-                                        ? theme.colors.surfaceHighlight
+                                        ? '#34D39920'
                                         : 'transparent',
                                     borderColor: activeTab === tab
-                                        ? theme.colors.border
+                                        ? '#34D399'
                                         : 'transparent',
                                     borderWidth: 1,
                                 }
@@ -45,7 +45,7 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, contain
                                     styles.segmentText,
                                     {
                                         color: activeTab === tab
-                                            ? theme.colors.text
+                                            ? '#059669'
                                             : theme.colors.textSecondary
                                     }
                                 ]}
@@ -69,10 +69,10 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, contain
                         styles.segmentButton,
                         {
                             backgroundColor: activeTab === tab
-                                ? theme.colors.surfaceHighlight
+                                ? '#34D39920'
                                 : 'transparent',
                             borderColor: activeTab === tab
-                                ? theme.colors.border
+                                ? '#34D399'
                                 : 'transparent',
                             borderWidth: 1,
                         }
@@ -83,7 +83,7 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, contain
                             styles.segmentText,
                             {
                                 color: activeTab === tab
-                                    ? theme.colors.text
+                                    ? '#059669'
                                     : theme.colors.textSecondary
                             }
                         ]}

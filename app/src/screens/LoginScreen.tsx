@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -25,81 +25,86 @@ export default function LoginScreen({ navigation }) {
     };
 
     return (
-        <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <View style={styles.header}>
-                <View style={styles.logoContainer}>
-                    <View style={[styles.logoBox, { backgroundColor: theme.colors.surfaceLight, borderColor: theme.colors.border }]}>
-                        <Ionicons name="filter-circle-outline" size={32} color={theme.colors.primary} />
-                    </View>
-                </View>
-                <Text style={[styles.logoTitle, { color: theme.colors.text }]}>IPO Lens</Text>
-                <Text style={[styles.tagline, { color: theme.colors.primary }]}>Track the Next Big Win</Text>
-            </View>
-
-            <View style={styles.formContainer}>
-                <View style={[styles.tabContainer, { backgroundColor: theme.colors.surfaceLight }]}>
-                    <TouchableOpacity style={[styles.tab, styles.activeTab, { backgroundColor: theme.colors.primary }]}>
-                        <Text style={[styles.activeTabText, { color: theme.colors.background }]}>Log In</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Register')}>
-                        <Text style={[styles.inactiveTabText, { color: theme.colors.textSecondary }]}>Sign Up</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <Text style={[styles.label, { color: theme.colors.text }]}>Email Address</Text>
-                <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                    <Ionicons name="mail-outline" size={20} color={theme.colors.textSecondary} style={styles.inputIcon} />
-                    <TextInput
-                        style={[styles.input, { color: theme.colors.text }]}
-                        placeholder="investor@example.com"
-                        placeholderTextColor={theme.colors.textSecondary}
-                        value={username}
-                        onChangeText={setUsername}
-                        autoCapitalize="none"
-                    />
-                </View>
-
-                <View style={styles.passwordHeader}>
-                    <Text style={[styles.label, { color: theme.colors.text }]}>Password</Text>
-                    <TouchableOpacity>
-                        <Text style={[styles.forgotPassword, { color: theme.colors.primary }]}>Forgot Password?</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                    <Ionicons name="lock-closed-outline" size={20} color={theme.colors.textSecondary} style={styles.inputIcon} />
-                    <TextInput
-                        style={[styles.input, { color: theme.colors.text }]}
-                        placeholder="........"
-                        placeholderTextColor={theme.colors.textSecondary}
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={!showPassword}
-                    />
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                        <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={theme.colors.textSecondary} />
-                    </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity
-                    style={[styles.button, { backgroundColor: theme.colors.primary }]}
-                    onPress={handleLogin}
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <ActivityIndicator color={theme.colors.background} />
-                    ) : (
-                        <View style={styles.buttonContent}>
-                            <Text style={[styles.buttonText, { color: theme.colors.background }]}>Log In</Text>
-                            <Ionicons name="arrow-forward" size={20} color={theme.colors.background} />
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
+                <View style={styles.header}>
+                    <View style={styles.logoContainer}>
+                        <View style={[styles.logoBox, { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border }]}>
+                            <Ionicons name="filter-circle-outline" size={32} color={theme.colors.primary} />
                         </View>
-                    )}
-                </TouchableOpacity>
+                    </View>
+                    <Text style={[styles.logoTitle, { color: theme.colors.text }]}>IPO Lens</Text>
+                    <Text style={[styles.tagline, { color: theme.colors.primary }]}>Track the Next Big Win</Text>
+                </View>
 
-                <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
-                    By logging in, you agree to our <Text style={[styles.link, { color: theme.colors.textSecondary }]}>Terms of Service</Text> and <Text style={[styles.link, { color: theme.colors.textSecondary }]}>Privacy Policy</Text>.
-                </Text>
-            </View>
-        </ScrollView>
+                <View style={styles.formContainer}>
+                    <View style={[styles.tabContainer, { backgroundColor: theme.colors.surfaceHighlight }]}>
+                        <TouchableOpacity style={[styles.tab, styles.activeTab, { backgroundColor: theme.colors.primary }]}>
+                            <Text style={[styles.activeTabText, { color: theme.colors.background }]}>Log In</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Register')}>
+                            <Text style={[styles.inactiveTabText, { color: theme.colors.textSecondary }]}>Sign Up</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <Text style={[styles.label, { color: theme.colors.text }]}>Email Address</Text>
+                    <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                        <Ionicons name="mail-outline" size={20} color={theme.colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                            style={[styles.input, { color: theme.colors.text }]}
+                            placeholder="investor@example.com"
+                            placeholderTextColor={theme.colors.textSecondary}
+                            value={username}
+                            onChangeText={setUsername}
+                            autoCapitalize="none"
+                        />
+                    </View>
+
+                    <View style={styles.passwordHeader}>
+                        <Text style={[styles.label, { color: theme.colors.text }]}>Password</Text>
+                        <TouchableOpacity>
+                            <Text style={[styles.forgotPassword, { color: theme.colors.primary }]}>Forgot Password?</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                        <Ionicons name="lock-closed-outline" size={20} color={theme.colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                            style={[styles.input, { color: theme.colors.text }]}
+                            placeholder="........"
+                            placeholderTextColor={theme.colors.textSecondary}
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry={!showPassword}
+                        />
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                            <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={theme.colors.textSecondary} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <TouchableOpacity
+                        style={[styles.button, { backgroundColor: theme.colors.primary }]}
+                        onPress={handleLogin}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <ActivityIndicator color={theme.colors.background} />
+                        ) : (
+                            <View style={styles.buttonContent}>
+                                <Text style={[styles.buttonText, { color: theme.colors.background }]}>Log In</Text>
+                                <Ionicons name="arrow-forward" size={20} color={theme.colors.background} />
+                            </View>
+                        )}
+                    </TouchableOpacity>
+
+                    <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
+                        By logging in, you agree to our <Text style={[styles.link, { color: theme.colors.textSecondary }]}>Terms of Service</Text> and <Text style={[styles.link, { color: theme.colors.textSecondary }]}>Privacy Policy</Text>.
+                    </Text>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -123,7 +128,7 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         borderRadius: 16,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: defaultTheme.spacing.md,
@@ -146,7 +151,7 @@ const styles = StyleSheet.create({
     tabContainer: {
         flexDirection: 'row',
         marginBottom: defaultTheme.spacing.xl,
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 12,
         padding: 4,
     },
@@ -209,7 +214,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: defaultTheme.spacing.lg,
-        ...defaultTheme.shadows.button,
+        ...defaultTheme.shadows.soft,
     },
     buttonContent: {
         flexDirection: 'row',
@@ -225,7 +230,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         padding: 12,
         borderRadius: 24,
         alignSelf: 'center',
@@ -262,7 +267,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: defaultTheme.colors.surfaceLight,
+        backgroundColor: defaultTheme.colors.surfaceHighlight,
         paddingVertical: 12,
         borderRadius: 12,
         borderWidth: 1,

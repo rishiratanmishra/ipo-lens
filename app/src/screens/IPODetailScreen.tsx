@@ -148,7 +148,13 @@ export default function IPODetailScreen({ navigation, route }) {
             reservation: details?.reservation || [],
             leadManagers: details?.lead_managers || [],
             address: details?.address || '',
-            applicationBreakup: details?.application_breakup || []
+            applicationBreakup: details?.application_breakup || [],
+
+            // Added missing keys from user JSON
+            subscriptionDemand: details?.subscription_demand || [],
+            qibInterest: details?.qib_interest || [],
+            peerValuation: details?.peer_valuation || [],
+            peerFinancials: details?.peer_financials || [],
         };
     }, [ipo, details]);
 
@@ -203,10 +209,15 @@ export default function IPODetailScreen({ navigation, route }) {
             <IPOSubscription
                 loading={loading}
                 subscription={details?.subscription}
+                subscriptionDemand={displayData.subscriptionDemand}
                 applicationBreakup={displayData.applicationBreakup}
             />
 
-            <IPOKPIs kpi={details?.kpi} />
+            <IPOKPIs
+                kpi={details?.kpi}
+                peerValuation={displayData.peerValuation}
+                peerFinancials={displayData.peerFinancials}
+            />
 
             <IPOCompanyInfo
                 details={details}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, Image } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -183,55 +183,130 @@ export default function GMPListScreen({ navigation }) {
                 </View>
             </View>
 
-            {/* Tabs */}
-            <View style={styles.tabContainer}>
+            {/* Segmented Control */}
+            <View style={[styles.segmentedControlContainer, { backgroundColor: theme.colors.surface }]}>
                 <TouchableOpacity
-                    style={[styles.tab, activeTab === 'Mainboard' && { borderBottomColor: theme.colors.primary }]}
+                    style={[
+                        styles.segment,
+                        activeTab === 'Mainboard'
+                            ? { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border, borderWidth: 1 }
+                            : { backgroundColor: 'transparent' }
+                    ]}
                     onPress={() => setActiveTab('Mainboard')}
                 >
                     <Text style={[
-                        styles.tabText,
-                        { color: theme.colors.textSecondary },
-                        activeTab === 'Mainboard' && { color: theme.colors.text }
-                    ]}>Mainboard</Text>
+                        styles.segmentText,
+                        activeTab === 'Mainboard' ? { color: theme.colors.text } : { color: theme.colors.textSecondary }
+                    ]}>
+                        Mainboard
+                    </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={[styles.tab, activeTab === 'SME' && { borderBottomColor: theme.colors.primary }]}
+                    style={[
+                        styles.segment,
+                        activeTab === 'SME'
+                            ? { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border, borderWidth: 1 }
+                            : { backgroundColor: 'transparent' }
+                    ]}
                     onPress={() => setActiveTab('SME')}
                 >
                     <Text style={[
-                        styles.tabText,
-                        { color: theme.colors.textSecondary },
-                        activeTab === 'SME' && { color: theme.colors.text }
-                    ]}>SME</Text>
+                        styles.segmentText,
+                        activeTab === 'SME' ? { color: theme.colors.text } : { color: theme.colors.textSecondary }
+                    ]}>
+                        SME
+                    </Text>
                 </TouchableOpacity>
             </View>
 
-            {/* Hero Card */}
-            <LinearGradient
-                colors={theme.gradients.darkCard}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={[styles.heroCard, { borderColor: theme.colors.success + '40' }]}
-            >
-                <View>
-                    <Text style={[styles.heroLabel, { color: theme.colors.success }]}>MARKET MOOD</Text>
-                    <Text style={[styles.heroTitle, { color: theme.colors.text }]}>Bullish Sentiment</Text>
-                    <Text style={[styles.heroSubtitle, { color: theme.colors.textSecondary }]}>High listing gains expected</Text>
-                </View>
-                <View style={[styles.moodIcon, { backgroundColor: theme.colors.success + '20' }]}>
-                    <Ionicons name="trending-up" size={32} color={theme.colors.success} />
-                </View>
-            </LinearGradient>
+            {/* Filter Chips */}
+            <View style={styles.filterSection}>
+                <Text style={[styles.filterLabel, { color: theme.colors.textSecondary }]}>Status</Text>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.chipsContainer}
+                >
+                    {['', 'OPEN', 'UPCOMING', 'CLOSED', 'LISTED'].map((status) => (
+                        <TouchableOpacity
+                            key={status}
+                            style={[
+                                styles.chip,
+                                {
+                                    backgroundColor: selectedStatus === status
+                                        ? theme.colors.primary
+                                        : theme.colors.surfaceHighlight,
+                                    borderColor: selectedStatus === status
+                                        ? theme.colors.primary
+                                        : theme.colors.border
+                                }
+                            ]}
+                            onPress={() => setSelectedStatus(status)}
+                        >
+                            <Text style={[
+                                styles.chipText,
+                                {
+                                    color: selectedStatus === status
+                                        ? '#fff'
+                                        : theme.colors.text
+                                }
+                            ]}>
+                                {status === '' ? 'All' : status}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+
+                <Text style={[styles.filterLabel, { color: theme.colors.textSecondary, marginTop: 12 }]}>Premium Range</Text>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.chipsContainer}
+                >
+                    {[
+                        { label: 'All', min: 1, max: undefined },
+                        { label: '₹50-100', min: 50, max: 100 },
+                        { label: '₹100-200', min: 100, max: 200 },
+                        { label: '₹200+', min: 200, max: undefined },
+                    ].map((option) => (
+                        <TouchableOpacity
+                            key={option.label}
+                            style={[
+                                styles.chip,
+                                {
+                                    backgroundColor: selectedMinPremium === option.min && selectedMaxPremium === option.max
+                                        ? theme.colors.primary
+                                        : theme.colors.surfaceHighlight,
+                                    borderColor: selectedMinPremium === option.min && selectedMaxPremium === option.max
+                                        ? theme.colors.primary
+                                        : theme.colors.border
+                                }
+                            ]}
+                            onPress={() => {
+                                setSelectedMinPremium(option.min);
+                                setSelectedMaxPremium(option.max);
+                            }}
+                        >
+                            <Text style={[
+                                styles.chipText,
+                                {
+                                    color: selectedMinPremium === option.min && selectedMaxPremium === option.max
+                                        ? '#fff'
+                                        : theme.colors.text
+                                }
+                            ]}>
+                                {option.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
 
             {/* List Header */}
             <View style={styles.listHeaderRow}>
                 <Text style={[styles.listHeaderTitle, { color: theme.colors.text }]}>
                     {selectedStatus ? `${selectedStatus} IPOs` : 'Top Gainers'}
                 </Text>
-                <TouchableOpacity onPress={() => setFilterVisible(true)}>
-                    <Ionicons name={selectedStatus ? "filter" : "filter-outline"} size={20} color={selectedStatus ? theme.colors.primary : theme.colors.textSecondary} />
-                </TouchableOpacity>
             </View>
 
             {loading ? (
@@ -379,27 +454,23 @@ const styles = StyleSheet.create({
     iconButton: {
         padding: 4,
     },
-    tabContainer: {
+    segmentedControlContainer: {
         flexDirection: 'row',
-        paddingHorizontal: defaultTheme.spacing.md,
-        marginTop: defaultTheme.spacing.md,
-        gap: 16,
+        marginHorizontal: defaultTheme.spacing.md,
+        marginVertical: defaultTheme.spacing.md,
+        borderRadius: 12,
+        padding: 4,
+        height: 48,
     },
-    tab: {
-        paddingBottom: 8,
-        borderBottomWidth: 2,
-        borderBottomColor: 'transparent',
+    segment: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
     },
-    activeTab: {
-        borderBottomColor: defaultTheme.colors.primary,
-    },
-    tabText: {
-        fontSize: 16,
-        color: defaultTheme.colors.textSecondary,
-        fontWeight: 'bold',
-    },
-    activeTabText: {
-        color: defaultTheme.colors.text,
+    segmentText: {
+        fontSize: 13,
+        fontWeight: '600',
     },
     heroCard: {
         margin: defaultTheme.spacing.md,
@@ -582,5 +653,31 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    filterSection: {
+        paddingHorizontal: defaultTheme.spacing.md,
+        paddingVertical: defaultTheme.spacing.sm,
+    },
+    filterLabel: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        marginBottom: 8,
+        color: defaultTheme.colors.textSecondary,
+    },
+    chipsContainer: {
+        paddingRight: defaultTheme.spacing.md,
+        gap: 8,
+    },
+    chip: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 1,
+        marginRight: 8,
+    },
+    chipText: {
+        fontSize: 14,
+        fontWeight: '600',
     }
 });

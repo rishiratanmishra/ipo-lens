@@ -497,8 +497,8 @@ const styles = StyleSheet.create({
         paddingBottom: 16,
     },
     headerTitle: {
-        fontSize: 28,
-        fontWeight: '800',
+        fontSize: 20,
+        fontWeight: '700',
         letterSpacing: -0.5,
         color: defaultTheme.colors.text,
     },

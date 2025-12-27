@@ -123,6 +123,9 @@ export default function BuybackListScreen() {
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
             <View style={styles.header}>
                 <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Buybacks</Text>
+                <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
+                    Track Open & Upcoming Buybacks
+                </Text>
             </View>
 
             {/* Segmented Control Tabs */}
@@ -158,8 +161,14 @@ const styles = StyleSheet.create({
         marginBottom: 5,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
+    },
+    headerSubtitle: {
+        fontSize: 13,
+        fontWeight: '500',
+        marginTop: 2,
+        color: defaultTheme.colors.textSecondary,
     },
     listContent: {
         paddingHorizontal: defaultTheme.spacing.md,

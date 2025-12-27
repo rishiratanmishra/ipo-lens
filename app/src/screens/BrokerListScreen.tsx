@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { SvgUri } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import SegmentedControl from '../components/common/SegmentedControl';
 
 export default function BrokerListScreen() {
     const { theme } = useTheme();
@@ -207,27 +208,11 @@ export default function BrokerListScreen() {
             </View>
 
             {/* Segmented Control Tabs */}
-            <View style={[styles.segmentContainer, { backgroundColor: theme.colors.surface }]}>
-                {tabs.map(tab => (
-                    <TouchableOpacity
-                        key={tab}
-                        onPress={() => setSelectedTab(tab)}
-                        style={[
-                            styles.segmentButton,
-                            selectedTab === tab
-                                ? { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border, borderWidth: 1 }
-                                : { backgroundColor: 'transparent' }
-                        ]}
-                    >
-                        <Text style={[
-                            styles.segmentText,
-                            selectedTab === tab ? { color: theme.colors.text } : { color: theme.colors.textSecondary }
-                        ]}>
-                            {tab}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+            <SegmentedControl
+                tabs={tabs}
+                activeTab={selectedTab}
+                onTabChange={setSelectedTab}
+            />
 
             <FlatList
                 data={filteredBrokers}
@@ -328,26 +313,6 @@ const styles = StyleSheet.create({
     catText: {
         fontSize: 10,
         fontWeight: '500',
-    },
-
-    // Segment Control Styles
-    segmentContainer: {
-        flexDirection: 'row',
-        marginHorizontal: 15, // Matches card margins
-        marginVertical: 15,
-        borderRadius: 12,
-        padding: 4,
-        height: 48,
-    },
-    segmentButton: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 10
-    },
-    segmentText: {
-        fontSize: 13,
-        fontWeight: '600'
     },
 
     divider: { height: 1, width: '100%', marginBottom: 15, opacity: 0.5 },

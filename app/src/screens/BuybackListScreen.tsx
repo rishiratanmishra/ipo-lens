@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getBuybacks, Buyback } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
+import SegmentedControl from '../components/common/SegmentedControl';
 
 export default function BuybackListScreen() {
     const { theme } = useTheme();
@@ -125,27 +126,11 @@ export default function BuybackListScreen() {
             </View>
 
             {/* Segmented Control Tabs */}
-            <View style={[styles.segmentContainer, { backgroundColor: theme.colors.surface }]}>
-                {tabs.map(tab => (
-                    <TouchableOpacity
-                        key={tab}
-                        onPress={() => setActiveTab(tab)}
-                        style={[
-                            styles.segmentButton,
-                            activeTab === tab
-                                ? { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border, borderWidth: 1 }
-                                : { backgroundColor: 'transparent' }
-                        ]}
-                    >
-                        <Text style={[
-                            styles.segmentText,
-                            activeTab === tab ? { color: theme.colors.text } : { color: theme.colors.textSecondary }
-                        ]}>
-                            {tab}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+            <SegmentedControl
+                tabs={tabs}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+            />
 
             <FlatList
                 data={filteredData}
@@ -175,25 +160,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-    },
-    // Segment Control Styles
-    segmentContainer: {
-        flexDirection: 'row',
-        marginHorizontal: 15,
-        marginBottom: 15,
-        borderRadius: 12,
-        padding: 4,
-        height: 48,
-    },
-    segmentButton: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 10
-    },
-    segmentText: {
-        fontSize: 13,
-        fontWeight: '600'
     },
     listContent: {
         paddingHorizontal: defaultTheme.spacing.md,

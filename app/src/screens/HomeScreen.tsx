@@ -8,6 +8,8 @@ import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme, theme } from '../theme';
 import { getIPOs, IPO, getMarketIndices, MarketIndex } from '../services/api';
+import SegmentedControl from '../components/common/SegmentedControl';
+import FilterChips from '../components/common/FilterChips';
 
 
 const { width } = Dimensions.get('window');
@@ -326,41 +328,23 @@ export default function HomeScreen({ navigation }) {
                 </View>
 
                 {/* Type Selector (Mainboard/SME) */}
-                <View style={[styles.segmentContainer, { backgroundColor: theme.colors.surface }]}>
-                    <TouchableOpacity
-                        style={[styles.segmentButton, !isSme && { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border, borderWidth: 1 }]}
-                        onPress={() => setIsSme(false)}
-                    >
-                        <Text style={[styles.segmentText, !isSme ? { color: theme.colors.white } : { color: theme.colors.textSecondary }]}>Mainboard</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.segmentButton, isSme && { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border, borderWidth: 1 }]}
-                        onPress={() => setIsSme(true)}
-                    >
-                        <Text style={[styles.segmentText, isSme ? { color: theme.colors.white } : { color: theme.colors.textSecondary }]}>SME IPO</Text>
-                    </TouchableOpacity>
-                </View>
+                <SegmentedControl
+                    tabs={['Mainboard', 'SME IPO']}
+                    activeTab={isSme ? 'SME IPO' : 'Mainboard'}
+                    onTabChange={(tab) => setIsSme(tab === 'SME IPO')}
+                    containerStyle={{ marginHorizontal: 24, marginTop: 10, marginBottom: 20 }}
+                />
 
                 {/* Categories */}
-                <View style={styles.tabsContainer}>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
-                        {TABS.map(tab => (
-                            <TouchableOpacity
-                                key={tab.id}
-                                onPress={() => setActiveTab(tab.id)}
-                                style={[
-                                    styles.tab,
-                                    activeTab === tab.id ? { backgroundColor: theme.colors.primary } : { backgroundColor: 'transparent', borderColor: theme.colors.border, borderWidth: 1 }
-                                ]}
-                            >
-                                <Text style={[
-                                    styles.tabText,
-                                    activeTab === tab.id ? { color: '#000' } : { color: theme.colors.textSecondary }
-                                ]}>{tab.label}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
+                <FilterChips
+                    options={TABS.map(tab => tab.label)}
+                    selectedValue={TABS.find(tab => tab.id === activeTab)?.label || 'Open'}
+                    onSelect={(label) => {
+                        const selectedTab = TABS.find(tab => tab.label === label);
+                        if (selectedTab) setActiveTab(selectedTab.id);
+                    }}
+                    containerStyle={{ marginBottom: 15, marginHorizontal: 24 }}
+                />
 
                 {/* IPO List */}
                 {loading ? (
@@ -423,22 +407,6 @@ const styles = StyleSheet.create({
     tickerLabel: { fontSize: 10, fontWeight: '700', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
     tickerValue: { fontSize: 16, fontWeight: '700' },
     trendBadge: { flexDirection: 'row', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, alignItems: 'center', gap: 2 },
-
-    segmentContainer: {
-        flexDirection: 'row',
-        marginHorizontal: 24,
-        marginTop: 10,
-        marginBottom: 20,
-        borderRadius: 12,
-        padding: 4,
-        height: 48,
-    },
-    segmentButton: { flex: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 10 },
-    segmentText: { fontSize: 13, fontWeight: '600' },
-
-    tabsContainer: { marginBottom: 15, marginHorizontal: 24 },
-    tab: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: 100, marginRight: 10 },
-    tabText: { fontWeight: '600', fontSize: 12 },
 
     listContent: { paddingHorizontal: 24, paddingBottom: 100 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },

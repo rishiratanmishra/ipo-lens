@@ -296,19 +296,23 @@ const styles = StyleSheet.create({
 
     cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
     logoWrapper: {
-        width: 64,
-        height: 64,
-        borderRadius: 16,
+        width: 60,
+        height: 60,
+        borderRadius: 14,
         borderWidth: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         marginRight: 15,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        backgroundColor: '#ffffff',
     },
-    logo: { width: 45, height: 45 },
+    logo: {
+        width: '100%',
+        height: '100%',
+        padding: 6,
+        backgroundColor: '#ffffff',
+    },
     logoPlaceholder: { width: 45, height: 45, justifyContent: 'center', alignItems: 'center' },
 
-    headerInfo: { flex: 1, paddingRight: 80 }, // Space for badge
+    headerInfo: { flex: 1, paddingRight: 80 }, 
     name: { fontSize: 20, fontWeight: '700', marginBottom: 4 },
     ratingRow: { flexDirection: 'row', alignItems: 'center' },
     stars: { flexDirection: 'row', marginRight: 6 },

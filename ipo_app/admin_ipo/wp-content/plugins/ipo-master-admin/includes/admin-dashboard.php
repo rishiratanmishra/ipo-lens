@@ -1,16 +1,19 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-// ================= ADMIN DASHBOARD PAGE =================
+/**
+ * Renders the Main IPO Master Dashboard Page.
+ * Handles stats display, setting updates, and the main data table.
+ */
 function ipom_dashboard_page(){
     global $wpdb;
     
-    // Logic for Stats
+    // --- Statistics Query ---
     $total      = $wpdb->get_var("SELECT COUNT(*) FROM ".IPOM_TABLE);
     $total_sme  = $wpdb->get_var("SELECT COUNT(*) FROM ".IPOM_TABLE." WHERE is_sme=1");
     $total_main = $wpdb->get_var("SELECT COUNT(*) FROM ".IPOM_TABLE." WHERE is_sme=0");
     
-    // Logic for Settings (Cron)
+    // --- Settings Handling (Cron) ---
     if(isset($_POST['ipom_save_settings'])){
         check_admin_referer('ipom_settings_nonce');
         $interval = sanitize_text_field($_POST['ipom_cron_interval']);
@@ -26,7 +29,7 @@ function ipom_dashboard_page(){
     $current_interval = get_option('ipom_cron_interval', 'hourly');
     $last_fetch = get_option("ipom_last_fetch", "Never");
 
-    // Logic for Table filters
+    // --- Table Filtering & Pagination ---
     $search = $_GET['s'] ?? '';
     $filter = $_GET['type'] ?? '';
     $paged  = max(1, intval($_GET['paged'] ?? 1));
@@ -42,7 +45,7 @@ function ipom_dashboard_page(){
     $total_rows = $wpdb->get_var("SELECT COUNT(*) FROM ".IPOM_TABLE." $where");
     $total_pages = ceil($total_rows / $limit);
 
-    // CSS Styles
+    // --- Render View ---
     ?>
     <style>
         .ipom-header { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ccd0d4; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 1px rgba(0,0,0,.04); }
@@ -84,7 +87,7 @@ function ipom_dashboard_page(){
 
     <div class="wrap" style="max-width: 1200px; margin-top: 20px;">
         
-        <!-- HEADER -->
+        <!-- Header Section -->
         <div class="ipom-header">
             <div class="ipom-title">
                 <h1>IPO Master Dashboard</h1>
@@ -114,7 +117,7 @@ function ipom_dashboard_page(){
             </div>
         </div>
 
-        <!-- STATS CARDS -->
+        <!-- Stats Cards -->
         <div class="ipom-stats-grid">
             <div class="ipom-stat-card">
                 <h3>Total IPOs</h3>
@@ -130,9 +133,9 @@ function ipom_dashboard_page(){
             </div>
         </div>
 
-        <!-- TABLE SECTION -->
+        <!-- Main Data Table -->
         <div class="ipom-table-container">
-            <!-- FILTERS -->
+            <!-- Search & Filter Controls -->
             <form method="GET" class="ipom-controls">
                 <input type="hidden" name="page" value="ipo-master">
                 
@@ -191,7 +194,7 @@ function ipom_dashboard_page(){
                 </tbody>
             </table>
 
-            <!-- PAGINATION -->
+            <!-- Pagination -->
             <div class="ipom-pagination">
                 <div class="tablenav-pages">
                     <span class="displaying-num"><?php echo $total_rows; ?> items</span>

@@ -64,23 +64,17 @@ function ipod_manual_fetch_wrapper() {
 function ipodetails_fetch_all() {
     global $wpdb;
 
-    $log_file = plugin_dir_path(__FILE__) . 'includes/debug_ipo.txt';
-    $log = function($msg) use ($log_file) {
-        file_put_contents(
-            $log_file,
-            date("Y-m-d H:i:s") . " - " . $msg . "\n",
-            FILE_APPEND
-        );
-    };
+    // Debug logging removed
 
-    $log("CRON STARTED");
 
     $limit = 15;
 
     /**
-     * ✅ SIMPLE & SAFE SQL
-     * No date parsing
-     * No fragile STR_TO_DATE
+     * Fetch IPOs that need updating.
+     * Criteria:
+     * 1. Not yet fetched (fetched_at is NULL).
+     * 2. Or fetched more than 1 hour ago.
+     * Prioritizes valid statuses (OPEN, UPCOMING, CLOSED).
      */
     $ipos = $wpdb->get_results(
         $wpdb->prepare(
@@ -105,7 +99,7 @@ function ipodetails_fetch_all() {
         )
     );
 
-    $log("SQL FOUND: " . count($ipos) . " IPOs");
+
 
     if (!$ipos) return;
 
@@ -115,12 +109,12 @@ function ipodetails_fetch_all() {
             continue;
         }
 
-        $log("Fetching IPO ID: {$ipo->id}");
+
 
         $data = fetch_ipo_details_data($ipo->id, $ipo->slug);
 
         if (!$data || isset($data['error']) || empty($data['ipo_name'])) {
-            $log("FAILED IPO ID: {$ipo->id}");
+
             continue;
         }
 
@@ -132,12 +126,18 @@ function ipodetails_fetch_all() {
             "updated_at"   => current_time("mysql"),
         ]);
 
-        $log("SUCCESS IPO ID: {$ipo->id}");
+
     }
 }
 
 /* ================= FETCH RULES ================= */
 
+/**
+ * Determines if a specific IPO needs to be refetched based on its status and last fetch time.
+ *
+ * @param object $ipo The IPO object from the database.
+ * @return bool True if it should be fetched, false otherwise.
+ */
 function ipodetails_should_fetch($ipo) {
 
     if (empty($ipo->fetched_at)) {

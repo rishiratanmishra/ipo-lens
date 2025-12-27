@@ -12,7 +12,7 @@ global $wpdb;
 define("IPOM_TABLE", $wpdb->prefix . "ipomaster");
 define("IPOM_URL", plugin_dir_url(__FILE__));
 
-// ================= CREATE DB TABLE + CRON =================
+// --- Constants ---
 register_activation_hook(__FILE__, function() {
     global $wpdb;
     $charset = $wpdb->get_charset_collate();
@@ -51,10 +51,14 @@ register_deactivation_hook(__FILE__, function(){
     wp_clear_scheduled_hook("ipom_hourly_event");
 });
 
-// ================= CRON & FETCH FUNCTION =================
+// --- Cron & Fetch Logic ---
 add_action("ipom_hourly_event", "ipom_fetch_data");
 add_action("admin_post_ipom_manual_fetch", "ipom_fetch_data");
 
+/**
+ * Fetches the latest IPO data from the master source and updates local DB.
+ * Can be triggered via Cron or Manual Action.
+ */
 function ipom_fetch_data(){
     global $wpdb;
     $url = "https://www.ipopremium.in/ipo";
@@ -110,7 +114,7 @@ function ipom_fetch_data(){
     exit;
 }
 
-// ================= ADMIN MENU & DASHBOARD =================
+// --- Admin Menu & Dashboard ---
 require_once plugin_dir_path(__FILE__) . 'includes/admin-dashboard.php';
 
 add_action("admin_menu", function(){
@@ -134,7 +138,7 @@ add_action("admin_menu", function(){
     );
 });
 
-// ================= FRONTEND SHORTCODE =================
+// --- Frontend Shortcode ---
 add_shortcode("ipo_master_table", function(){
     global $wpdb;
     $table = IPOM_TABLE;

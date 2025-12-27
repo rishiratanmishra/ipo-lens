@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -11,8 +11,11 @@ interface IPOKPIsProps {
     peerFinancials?: any[];
 }
 
+type ViewMode = 'card' | 'table';
+
 const IPOKPIs: React.FC<IPOKPIsProps> = ({ kpi, peerValuation, peerFinancials }) => {
     const { theme } = useTheme();
+    const [peerViewMode, setPeerViewMode] = useState<ViewMode>('card');
 
     // Check if we have any data to show
     const hasKpi = kpi && kpi.length > 0;
@@ -21,7 +24,7 @@ const IPOKPIs: React.FC<IPOKPIsProps> = ({ kpi, peerValuation, peerFinancials })
     if (!hasKpi && !hasPeer) return null;
 
     // Helper to render a table with sticky first column
-    const renderTable = (data: any[], title: string, keyPropName: string = 'kpi') => {
+    const renderTable = (data: any[], title: string, keyPropName: string = 'kpi', showToggle: boolean = false) => {
         if (!data || data.length === 0) return null;
 
         // Dynamic keys excluding the Label Key
@@ -29,7 +32,47 @@ const IPOKPIs: React.FC<IPOKPIsProps> = ({ kpi, peerValuation, peerFinancials })
 
         return (
             <View style={{ marginBottom: 24 }}>
-                <Text style={[styles.subHeader, { color: theme.colors.textSecondary }]}>{title}</Text>
+                <View style={styles.subHeaderContainer}>
+                    <Text style={[styles.subHeader, { color: theme.colors.textSecondary }]}>{title}</Text>
+                    {showToggle && (
+                        <View style={styles.viewToggleContainer}>
+                            <TouchableOpacity
+                                onPress={() => setPeerViewMode('table')}
+                                style={[
+                                    styles.toggleButton,
+                                    peerViewMode === 'table' && styles.toggleButtonActive,
+                                    {
+                                        backgroundColor: peerViewMode === 'table' ? theme.colors.primary : 'transparent',
+                                        borderColor: theme.colors.border
+                                    }
+                                ]}
+                            >
+                                <MaterialCommunityIcons
+                                    name="view-list"
+                                    size={16}
+                                    color={peerViewMode === 'table' ? '#fff' : theme.colors.textSecondary}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setPeerViewMode('card')}
+                                style={[
+                                    styles.toggleButton,
+                                    peerViewMode === 'card' && styles.toggleButtonActive,
+                                    {
+                                        backgroundColor: peerViewMode === 'card' ? theme.colors.primary : 'transparent',
+                                        borderColor: theme.colors.border
+                                    }
+                                ]}
+                            >
+                                <MaterialCommunityIcons
+                                    name="view-grid"
+                                    size={16}
+                                    color={peerViewMode === 'card' ? '#fff' : theme.colors.textSecondary}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
                 <LinearGradient
                     colors={theme.gradients?.darkCard || [theme.colors.card, theme.colors.surfaceHighlight]}
                     start={{ x: 0, y: 0 }}
@@ -112,6 +155,110 @@ const IPOKPIs: React.FC<IPOKPIsProps> = ({ kpi, peerValuation, peerFinancials })
         );
     };
 
+    // Helper to render peer comparison table without sticky column
+    const renderPeerTable = (data: any[], title: string) => {
+        if (!data || data.length === 0) return null;
+
+        // All columns including Company
+        const allColumns = Object.keys(data[0]);
+
+        return (
+            <View style={{ marginBottom: 24 }}>
+                <View style={styles.subHeaderContainer}>
+                    <Text style={[styles.subHeader, { color: theme.colors.textSecondary }]}>{title}</Text>
+                    <View style={styles.viewToggleContainer}>
+                        <TouchableOpacity
+                            onPress={() => setPeerViewMode('table')}
+                            style={[
+                                styles.toggleButton,
+                                peerViewMode === 'table' && styles.toggleButtonActive,
+                                {
+                                    backgroundColor: peerViewMode === 'table' ? theme.colors.primary : 'transparent',
+                                    borderColor: theme.colors.border
+                                }
+                            ]}
+                        >
+                            <MaterialCommunityIcons
+                                name="view-list"
+                                size={16}
+                                color={peerViewMode === 'table' ? '#fff' : theme.colors.textSecondary}
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => setPeerViewMode('card')}
+                            style={[
+                                styles.toggleButton,
+                                peerViewMode === 'card' && styles.toggleButtonActive,
+                                {
+                                    backgroundColor: peerViewMode === 'card' ? theme.colors.primary : 'transparent',
+                                    borderColor: theme.colors.border
+                                }
+                            ]}
+                        >
+                            <MaterialCommunityIcons
+                                name="view-grid"
+                                size={16}
+                                color={peerViewMode === 'card' ? '#fff' : theme.colors.textSecondary}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                <LinearGradient
+                    colors={theme.gradients?.darkCard || [theme.colors.card, theme.colors.surfaceHighlight]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.tableCard, { borderColor: theme.colors.border }]}
+                >
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                    >
+                        <View>
+                            {/* Headers */}
+                            <View style={styles.scrollableHeaderRow}>
+                                {allColumns.map((key, i) => (
+                                    <View key={i} style={[styles.peerHeaderCell, { borderBottomColor: theme.colors.border, borderBottomWidth: 1 }]}>
+                                        <Text style={[styles.tableHeadText, { color: theme.colors.textSecondary }]}>
+                                            {key.toUpperCase()}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+
+                            {/* Data Rows */}
+                            {data.map((row, index) => (
+                                <View
+                                    key={index}
+                                    style={[
+                                        styles.scrollableDataRow,
+                                        {
+                                            borderBottomColor: theme.colors.border,
+                                            borderBottomWidth: index === data.length - 1 ? 0 : 1
+                                        }
+                                    ]}
+                                >
+                                    {allColumns.map((key, i) => (
+                                        <View key={i} style={styles.peerDataCell}>
+                                            <Text
+                                                style={[
+                                                    i === 0 ? styles.peerCompanyText : styles.valueText,
+                                                    { color: theme.colors.text }
+                                                ]}
+                                                numberOfLines={i === 0 ? 2 : 1}
+                                            >
+                                                {row[key] || row[key] === 0 ? row[key] : '-'}
+                                            </Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            ))}
+                        </View>
+                    </ScrollView>
+                </LinearGradient>
+            </View>
+        );
+    };
+
     // Helper to render peer comparison as cards
     const renderPeerCards = (data: any[], title: string, keyPropName: string = 'Company') => {
         if (!data || data.length === 0) return null;
@@ -121,7 +268,45 @@ const IPOKPIs: React.FC<IPOKPIsProps> = ({ kpi, peerValuation, peerFinancials })
 
         return (
             <View style={{ marginBottom: 24 }}>
-                <Text style={[styles.subHeader, { color: theme.colors.textSecondary }]}>{title}</Text>
+                <View style={styles.subHeaderContainer}>
+                    <Text style={[styles.subHeader, { color: theme.colors.textSecondary }]}>{title}</Text>
+                    <View style={styles.viewToggleContainer}>
+                        <TouchableOpacity
+                            onPress={() => setPeerViewMode('table')}
+                            style={[
+                                styles.toggleButton,
+                                peerViewMode === 'table' && styles.toggleButtonActive,
+                                {
+                                    backgroundColor: peerViewMode === 'table' ? theme.colors.primary : 'transparent',
+                                    borderColor: theme.colors.border
+                                }
+                            ]}
+                        >
+                            <MaterialCommunityIcons
+                                name="view-list"
+                                size={16}
+                                color={peerViewMode === 'table' ? '#fff' : theme.colors.textSecondary}
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => setPeerViewMode('card')}
+                            style={[
+                                styles.toggleButton,
+                                peerViewMode === 'card' && styles.toggleButtonActive,
+                                {
+                                    backgroundColor: peerViewMode === 'card' ? theme.colors.primary : 'transparent',
+                                    borderColor: theme.colors.border
+                                }
+                            ]}
+                        >
+                            <MaterialCommunityIcons
+                                name="view-grid"
+                                size={16}
+                                color={peerViewMode === 'card' ? '#fff' : theme.colors.textSecondary}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -135,7 +320,7 @@ const IPOKPIs: React.FC<IPOKPIsProps> = ({ kpi, peerValuation, peerFinancials })
                             end={{ x: 1, y: 1 }}
                             style={[styles.peerCard, { borderColor: theme.colors.border }]}
                         >
-                        
+
 
                             {/* Metrics */}
                             <View style={styles.metricsContainer}>
@@ -176,7 +361,10 @@ const IPOKPIs: React.FC<IPOKPIsProps> = ({ kpi, peerValuation, peerFinancials })
             </View>
 
             {renderTable(kpi, "Key Performance Indicators", "kpi")}
-            {renderPeerCards(peerValuation, "Peer Comparison", "Company")}
+            {peerViewMode === 'card'
+                ? renderPeerCards(peerValuation, "Peer Comparison", "Company")
+                : renderPeerTable(peerValuation, "Peer Comparison")
+            }
         </View>
     );
 };
@@ -211,6 +399,33 @@ const styles = StyleSheet.create({
         marginLeft: 4,
         textTransform: 'uppercase',
         letterSpacing: 1,
+    },
+    subHeaderContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+        marginLeft: 4,
+    },
+    viewToggleContainer: {
+        flexDirection: 'row',
+        gap: 8,
+        marginRight: 4,
+    },
+    toggleButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+    },
+    toggleButtonActive: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
     tableCard: {
         borderRadius: 16,
@@ -277,6 +492,25 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '500',
         textAlign: 'center',
+    },
+    // Peer table specific styles
+    peerHeaderCell: {
+        width: 120,
+        paddingBottom: 12,
+        paddingHorizontal: 12,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    peerDataCell: {
+        width: 120,
+        paddingHorizontal: 12,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    peerCompanyText: {
+        fontSize: 14,
+        fontWeight: '600',
+        textAlign: 'left',
     },
     // Card-based peer comparison styles
     cardsContainer: {

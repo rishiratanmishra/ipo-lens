@@ -12,6 +12,7 @@ import RegisterScreen from "../screens/RegisterScreen";
 import MenuScreen from "../screens/MenuScreen";
 import SettingsScreen from "../screens/settings/SettingsScreen";
 import IPODetailScreen from "../screens/IPODetailScreen";
+import WebViewScreen from "../screens/WebViewScreen";
 import { IPO } from "../services/api";
 import MainTabs from "./MainTabs";
 import { ActivityIndicator, View } from "react-native";
@@ -24,6 +25,7 @@ export type RootStackParamList = {
     Menu: undefined;
     Settings: undefined;
     IPODetail: { ipo: IPO };
+    WebView: { url: string; title?: string };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -75,6 +77,11 @@ function RootNavigator() {
                                 headerTintColor: theme.colors.text,
                                 headerTitleStyle: theme.typography.title,
                             }}
+                        />
+                        <Stack.Screen
+                            name="WebView"
+                            component={WebViewScreen}
+                            options={{ headerShown: true }}
                         />
                     </>
                 ) : (

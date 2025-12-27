@@ -153,7 +153,7 @@ export const getGMPTrends = async (
                 status: status || undefined,
                 min_premium: minPremium,
                 max_premium: maxPremium,
-                sort
+                type: sort
             }
         });
         

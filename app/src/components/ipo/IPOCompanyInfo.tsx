@@ -16,7 +16,7 @@ const IPOCompanyInfo: React.FC<IPOCompanyInfoProps> = ({ details, leadManagers, 
     const { theme } = useTheme();
 
     return (
-        <View>
+        <View style={{ marginTop: 24 }}>
             {/* About */}
             <View style={styles.headerContainer}>
                 <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceHighlight }]}>
@@ -138,21 +138,24 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '700',
         letterSpacing: 0.3,
+        marginBottom: 4,
     },
     aboutCard: {
         borderRadius: 16,
-        padding: 18,
+        padding: 20,
         borderWidth: 1,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 8,
         elevation: 4,
+        marginBottom: 8,
     },
     aboutText: {
-        fontSize: 14,
-        lineHeight: 22,
-        letterSpacing: 0.2,
+        fontSize: 15,
+        lineHeight: 24,
+        letterSpacing: 0.3,
+        textAlign: 'justify',
     },
     infoCard: {
         borderRadius: 16,

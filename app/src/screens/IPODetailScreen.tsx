@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, RefreshControl } from 'react-native';
 import { getIPODetails, IPODetails } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
@@ -28,22 +28,36 @@ export default function IPODetailScreen({ navigation, route }) {
     const companyName = ipo?.name || details?.ipo_name || 'IPO Details';
     const tag = ipo?.is_sme ? 'SME IPO' : 'Mainboard IPO';
 
-    useEffect(() => {
-        let isMounted = true;
-        const fetchDetails = async () => {
-            if (ipo?.id) {
-                const data = await getIPODetails(ipo.id);
-                if (isMounted) {
-                    setDetails(data);
-                    setLoading(false);
-                }
-            } else {
-                setLoading(false);
+    const [refreshing, setRefreshing] = useState(false);
+
+    // Extracted fetch function
+    const fetchDetails = async () => {
+        if (!ipo?.id) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const data = await getIPODetails(ipo.id);
+            if (data) {
+                setDetails(data);
             }
-        };
+        } catch (e) {
+            console.log("Error fetching details", e);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
         fetchDetails();
-        return () => { isMounted = false; };
     }, [ipo?.id]);
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchDetails();
+    };
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -175,7 +189,13 @@ export default function IPODetailScreen({ navigation, route }) {
     };
 
     return (
-        <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={{ paddingBottom: 40 }}>
+        <ScrollView
+            style={[styles.container, { backgroundColor: theme.colors.background }]}
+            contentContainerStyle={{ paddingBottom: 40 }}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+            }
+        >
             <IPOTopCard
                 ipo={ipo}
                 details={details}

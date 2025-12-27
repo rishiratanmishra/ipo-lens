@@ -9,6 +9,7 @@ interface IPOSubscriptionProps {
     loading: boolean;
     subscription: any[];
     applicationBreakup: any[];
+    subscriptionDemand?: any[];
 }
 
 const IPOSubscription: React.FC<IPOSubscriptionProps> = ({ loading, subscription, applicationBreakup }) => {

@@ -1,54 +1,63 @@
 <?php
 include_once '../config.php';
 
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=utf-8");
 
 // ---------- Pagination ----------
 $page  = isset($_GET['page'])  ? max(1, intval($_GET['page']))  : 1;
-$limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 20;
+$limit = isset($_GET['limit']) ? min(100, max(1, intval($_GET['limit']))) : 20;
 $offset = ($page - 1) * $limit;
 
 // ---------- Filters ----------
-$status  = isset($_GET['status']) ? strtoupper($_GET['status']) : '';
-$is_sme  = isset($_GET['is_sme']) ? intval($_GET['is_sme']) : null;
-$min_premium = isset($_GET['min_premium']) ? intval($_GET['min_premium']) : null;
-$max_premium = isset($_GET['max_premium']) ? intval($_GET['max_premium']) : null;
+$status = isset($_GET['status']) ? strtoupper($_GET['status']) : '';
+$is_sme = isset($_GET['is_sme']) ? intval($_GET['is_sme']) : null;
+$type   = $_GET['type'] ?? 'gmp_high'; // gmp_high | gmp_low
 
-// ---------- Base Query ----------
-$where = "WHERE 1=1";
+// ---------- Current Month ----------
+$currentMonthStart = date('Y-m-01');
+$currentMonthEnd   = date('Y-m-t');
 
-// SME Filter
-if ($is_sme !== null) {
-    $where .= " AND is_sme = {$is_sme}";
-}
-
-// Status Filter
-if ($status === "OPEN" || $status === "UPCOMING" || $status === "CLOSED") {
-    $where .= " AND UPPER(status) = '$status'";
-}
-
-// ---------- Premium Filter (Correct Logic) ----------
+// ---------- GMP Numeric Extraction ----------
 $clean_premium_sql = "
     CAST(
         NULLIF(
-            TRIM(
-                SUBSTRING_INDEX(premium, ' ', 1)
-            ),
-        '') AS DECIMAL(10,2)
+            TRIM(SUBSTRING_INDEX(premium, ' ', 1)),
+        '') AS SIGNED
     )
 ";
 
-if ($min_premium !== null) {
-    $where .= " AND $clean_premium_sql >= $min_premium";
+// ---------- WHERE ----------
+$where = "WHERE 1=1";
+
+// Only current month
+$where .= "
+ AND STR_TO_DATE(open_date, '%b %d, %Y')
+     BETWEEN '$currentMonthStart' AND '$currentMonthEnd'
+";
+
+// SME
+if ($is_sme !== null) {
+    $where .= " AND is_sme = $is_sme";
 }
 
-if ($max_premium !== null) {
-    $where .= " AND $clean_premium_sql <= $max_premium";
+// Status
+if (in_array($status, ['OPEN', 'UPCOMING', 'CLOSED'], true)) {
+    $where .= " AND UPPER(status) = '$status'";
 }
 
+// GMP mode filters
+if ($type === 'gmp_low') {
+    // Losers only
+    $where .= " AND $clean_premium_sql < 0";
+} else {
+    // Winners only
+    $where .= " AND $clean_premium_sql > 0";
+}
 
-// ---------- Sorting ----------
-$sort = isset($_GET['sort']) ? $_GET['sort'] : 'date'; // 'date', 'gmp_high', 'gmp_low'
+// ---------- ORDER ----------
+$orderBy = ($type === 'gmp_low')
+    ? "$clean_premium_sql ASC"   // most negative first
+    : "$clean_premium_sql DESC"; // highest GMP first
 
 // ---------- Fetch ----------
 $data = [];
@@ -57,34 +66,10 @@ $total = 0;
 if ($conn) {
 
     // COUNT
-    $countQuery = "SELECT COUNT(*) as total FROM wp_ipomaster $where";
+    $countQuery = "SELECT COUNT(*) FROM wp_ipomaster $where";
     $countStmt = $conn->prepare($countQuery);
     $countStmt->execute();
-    $total = $countStmt->fetchColumn();
-
-    // Determine ORDER BY clause
-    $parsedDate = "STR_TO_DATE(open_date, '%b %d, %Y')";
-    $yearMonthSort = "DATE_FORMAT($parsedDate, '%Y-%m') DESC";
-    $dateSort = "$parsedDate DESC";
-    
-    // Default sorting
-    $orderBy = "ORDER BY $dateSort";
-    
-    if ($sort === 'gmp_high') {
-        // Top Gainers: Only Positive GMP, Group by Month (Recent), then Highest GMP
-        $where .= " AND $clean_premium_sql > 0";
-        $orderBy = "ORDER BY $yearMonthSort, $clean_premium_sql DESC";
-    } elseif ($sort === 'gmp_low') {
-        // Top Losers: Only Negative GMP, Group by Month (Recent), then Lowest GMP
-        $where .= " AND $clean_premium_sql < 0";
-        $orderBy = "ORDER BY $yearMonthSort, $clean_premium_sql ASC";
-    }
-
-    // Recalculate Total for pagination with new filters
-    $countQuery = "SELECT COUNT(*) as total FROM wp_ipomaster $where";
-    $countStmt = $conn->prepare($countQuery);
-    $countStmt->execute();
-    $total = $countStmt->fetchColumn();
+    $total = (int)$countStmt->fetchColumn();
 
     // DATA
     $query = "
@@ -94,7 +79,9 @@ if ($conn) {
                premium, badge, status, icon_url, slug
         FROM wp_ipomaster
         $where
-        $orderBy
+        ORDER BY
+            $orderBy,
+            STR_TO_DATE(open_date, '%b %d, %Y') DESC
         LIMIT $limit OFFSET $offset
     ";
 
@@ -103,14 +90,12 @@ if ($conn) {
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-$response = [
+// ---------- Response ----------
+echo json_encode([
     "pagination" => [
         "page"  => $page,
         "limit" => $limit,
         "total" => $total
     ],
     "gmp_trends" => $data
-];
-
-echo json_encode($response);
-?>
+]);

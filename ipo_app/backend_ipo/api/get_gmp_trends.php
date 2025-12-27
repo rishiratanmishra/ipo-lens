@@ -55,9 +55,19 @@ if ($type === 'gmp_low') {
 }
 
 // ---------- ORDER ----------
-$orderBy = ($type === 'gmp_low')
-    ? "$clean_premium_sql ASC"   // most negative first
-    : "$clean_premium_sql DESC"; // highest GMP first
+// Calculate percentage: (GMP / MaxPrice)
+$gmp_percentage_sql = "($clean_premium_sql / NULLIF(max_price, 0))";
+
+// Gainers/Losers based on Percentage
+if ($type === 'gmp_low') {
+    // Losers: most negative percentage first.
+    // ASC puts NULLs first by default in MySQL, so push them to the end.
+    $orderBy = "CASE WHEN $gmp_percentage_sql IS NULL THEN 1 ELSE 0 END ASC, $gmp_percentage_sql ASC";
+} else {
+    // Gainers: highest percentage first.
+    // DESC puts NULLs last by default.
+    $orderBy = "$gmp_percentage_sql DESC";
+}
 
 // ---------- Fetch ----------
 $data = [];

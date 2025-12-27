@@ -198,7 +198,12 @@ export default function BrokerListScreen() {
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
             <View style={styles.header}>
-                <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Top Brokers</Text>
+                <View>
+                    <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Best Trading Brokers</Text>
+                    <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
+                        Compare and choose the best
+                    </Text>
+                </View>
                 <View style={styles.headerRight}>
                     <View style={[styles.updateBadge, { backgroundColor: theme.colors.surfaceHighlight }]}>
                         <Ionicons name="shield-checkmark-outline" size={12} color={theme.colors.success} />
@@ -235,11 +240,18 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingVertical: 10,
+        paddingTop: 10,
+        paddingBottom: 16,
     },
     headerTitle: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        fontSize: 20,
+        fontWeight: '700',
+        letterSpacing: -0.5,
+    },
+    headerSubtitle: {
+        fontSize: 13,
+        fontWeight: '500',
+        marginTop: 2,
     },
     headerRight: {
         flexDirection: 'row',

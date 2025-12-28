@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIPOsInfinite } from '../services/queries';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
+import EmptyState from '../components/common/EmptyState';
 
 export default function IPOListScreen({ navigation }) {
     const { theme } = useTheme();
@@ -100,7 +101,7 @@ export default function IPOListScreen({ navigation }) {
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContent}
                 refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
-                ListEmptyComponent={<Text style={[styles.empty, { color: theme.colors.textSecondary }]}>No active IPOs available.</Text>}
+                ListEmptyComponent={<EmptyState message="No active IPOs available" subMessage="Check back later" />}
                 onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.5}
                 ListFooterComponent={isFetchingNextPage ? <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 20 }} /> : null}

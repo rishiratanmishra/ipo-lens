@@ -8,6 +8,7 @@ import { theme as defaultTheme } from '../theme';
 import { IPO } from '../services/api';
 import { useGMPTrendsInfinite } from '../services/queries';
 import SegmentedControl from '../components/common/SegmentedControl';
+import EmptyState from '../components/common/EmptyState';
 
 const { width } = Dimensions.get('window');
 
@@ -142,13 +143,10 @@ export default function GMPListScreen({ navigation }) {
                         <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />
                     }
                     ListEmptyComponent={
-                        <View style={styles.emptyContainer}>
-                            <Ionicons name="trending-up-outline" size={64} color={theme.colors.textTertiary} />
-                            <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>No GMP Data Available</Text>
-                            <Text style={[styles.emptySubtitle, { color: theme.colors.textSecondary }]}>
-                                Try adjusting your filters or check back later
-                            </Text>
-                        </View>
+                        <EmptyState
+                            message="No GMP Data Available"
+                            subMessage="Try adjusting your filters or check back later"
+                        />
                     }
                     onEndReached={handleLoadMore}
                     onEndReachedThreshold={0.5}

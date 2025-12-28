@@ -11,6 +11,7 @@ import { IPO } from '../services/api';
 import { useIPOsInfinite, useMarketIndices } from '../services/queries';
 import SegmentedControl from '../components/common/SegmentedControl';
 import FilterChips from '../components/common/FilterChips';
+import EmptyState from '../components/common/EmptyState';
 
 
 const { width } = Dimensions.get('window');
@@ -336,10 +337,10 @@ export default function HomeScreen({ navigation }) {
                         onEndReachedThreshold={0.5}
                         ListFooterComponent={isFetchingNextPage ? <ActivityIndicator color={theme.colors.primary} style={{ marginVertical: 20 }} /> : null}
                         ListEmptyComponent={
-                            <View style={styles.center}>
-                                <Text style={{ color: theme.colors.textSecondary, marginTop: 40, fontSize: 16 }}>No {activeTab.toLowerCase()} IPOs found</Text>
-                                <Text style={{ color: theme.colors.textTertiary, fontSize: 12, marginTop: 8 }}>Check back later for updates</Text>
-                            </View>
+                            <EmptyState
+                                message={`No ${activeTab.toLowerCase()} IPOs found`}
+                                subMessage="Check back later for updates"
+                            />
                         }
                     />
                 )}

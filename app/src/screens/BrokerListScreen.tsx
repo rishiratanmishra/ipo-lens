@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { SvgUri } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import SegmentedControl from '../components/common/SegmentedControl';
+import EmptyState from '../components/common/EmptyState';
 
 export default function BrokerListScreen() {
     const { theme } = useTheme();
@@ -226,7 +227,7 @@ export default function BrokerListScreen() {
                 refreshControl={
                     <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />
                 }
-                ListEmptyComponent={<Text style={[styles.empty, { color: theme.colors.textSecondary }]}>No Brokers found in {selectedTab}.</Text>}
+                ListEmptyComponent={<EmptyState message={`No Brokers found in ${selectedTab}`} subMessage="Try changing the category" />}
             />
         </SafeAreaView>
     );

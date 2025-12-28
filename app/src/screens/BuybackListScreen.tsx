@@ -6,6 +6,7 @@ import { Buyback } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
 import SegmentedControl from '../components/common/SegmentedControl';
+import EmptyState from '../components/common/EmptyState';
 
 export default function BuybackListScreen() {
     const { theme } = useTheme();
@@ -170,9 +171,10 @@ export default function BuybackListScreen() {
                     }
                     ListEmptyComponent={
                         !isLoading ? (
-                            <View style={{ alignItems: 'center', marginTop: 50 }}>
-                                <Text style={[styles.empty, { color: theme.colors.textSecondary }]}>No {activeTab} Buybacks found.</Text>
-                            </View>
+                            <EmptyState
+                                message={`No ${activeTab} Buybacks found`}
+                                subMessage="Check back later"
+                            />
                         ) : null
                     }
                 />

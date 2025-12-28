@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -84,13 +84,13 @@ export default function MenuScreen() {
                         </View>
                     </View>
                 ) : (
-                    <View style={[styles.guestCard, { backgroundColor: theme.colors.glass, borderColor: theme.colors.glassStroke }]}>
+                    <View style={[styles.guestCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                         <View style={styles.guestContent}>
                             <View style={[styles.guestIconBox, { backgroundColor: theme.colors.surfaceHighlight }]}>
                                 <Ionicons name="person-outline" size={28} color={theme.colors.text} />
                             </View>
                             <View style={styles.guestInfo}>
-                                <Text style={[styles.guestTitle, { color: theme.colors.text }]}>Welcome Guest</Text>
+                                <Text style={[styles.guestTitle, { color: theme.colors.text }]}>Welcome Investor</Text>
                                 <Text style={[styles.guestSubtitle, { color: theme.colors.textSecondary }]}>Log in to manage your portfolio</Text>
                             </View>
                         </View>
@@ -103,40 +103,108 @@ export default function MenuScreen() {
                     </View>
                 )}
 
-                <View style={styles.menuItems}>
-                    <MenuItem icon="settings-outline" label="Settings" onPress={() => navigation.navigate('Settings')} theme={theme} />
-                    <MenuItem icon="help-circle-outline" label="Help & Support" onPress={() => { }} theme={theme} />
-                    <MenuItem icon="document-text-outline" label="Terms & Conditions" onPress={() => { }} theme={theme} />
-                    <MenuItem icon="shield-checkmark-outline" label="Privacy Policy" onPress={() => { }} theme={theme} />
-                </View>
+                <MenuSection title="PREFERENCES" theme={theme}>
+                    <MenuItem
+                        icon="settings-outline"
+                        label="Settings"
+                        onPress={() => navigation.navigate('Settings')}
+                        theme={theme}
+                        color={theme.colors.primary}
+                    />
+                    <MenuItem
+                        icon="notifications-outline"
+                        label="Notifications"
+                        onPress={() => { }}
+                        theme={theme}
+                        color={theme.colors.accent}
+                        isLast
+                    />
+                </MenuSection>
+
+                <MenuSection title="SUPPORT" theme={theme}>
+                    <MenuItem
+                        icon="help-circle-outline"
+                        label="Help & Support"
+                        onPress={() => { }}
+                        theme={theme}
+                        color={theme.colors.warning}
+                    />
+                    <MenuItem
+                        icon="chatbubble-ellipses-outline"
+                        label="Send Feedback"
+                        onPress={() => { }}
+                        theme={theme}
+                        color={theme.colors.purple}
+                    />
+                    <MenuItem
+                        icon="star-outline"
+                        label="Rate App"
+                        onPress={() => Alert.alert("Rate Us", "Opening store page...")}
+                        theme={theme}
+                        color={theme.colors.gold}
+                        isLast
+                    />
+                </MenuSection>
+
+                <MenuSection title="LEGAL" theme={theme}>
+                    <MenuItem
+                        icon="document-text-outline"
+                        label="Terms & Conditions"
+                        onPress={() => { }}
+                        theme={theme}
+                        color={theme.colors.textSecondary}
+                    />
+                    <MenuItem
+                        icon="shield-checkmark-outline"
+                        label="Privacy Policy"
+                        onPress={() => { }}
+                        theme={theme}
+                        color={theme.colors.textSecondary}
+                        isLast
+                    />
+                </MenuSection>
 
                 {user && (
-                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                        <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-                        <Text style={styles.logoutText}>Logout</Text>
+                    <TouchableOpacity style={[styles.logoutButton, { backgroundColor: theme.colors.error + '10' }]} onPress={handleLogout}>
+                        <Ionicons name="log-out-outline" size={20} color={theme.colors.error} />
+                        <Text style={[styles.logoutText, { color: theme.colors.error }]}>Log Out</Text>
                     </TouchableOpacity>
                 )}
+
+                <Text style={[styles.versionText, { color: theme.colors.textTertiary }]}>Version 1.0.0</Text>
             </ScrollView>
         </SafeAreaView>
     );
 }
 
-const MenuItem = ({ icon, label, onPress, theme }: { icon: any, label: string, onPress: () => void, theme: any }) => (
-    <TouchableOpacity style={[styles.menuItem, { backgroundColor: theme.colors.surfaceHighlight }]} onPress={onPress}>
+const MenuSection = ({ title, children, theme }: { title?: string, children: React.ReactNode, theme: any }) => (
+    <View style={styles.sectionContainer}>
+        {title && <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>{title}</Text>}
+        <View style={[styles.sectionContent, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+            {children}
+        </View>
+    </View>
+);
+
+const MenuItem = ({ icon, label, onPress, theme, isLast, color }: { icon: any, label: string, onPress: () => void, theme: any, isLast?: boolean, color?: string }) => (
+    <TouchableOpacity
+        style={[styles.menuItem, !isLast && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }]}
+        onPress={onPress}
+        activeOpacity={0.7}
+    >
         <View style={styles.menuItemLeft}>
-            <View style={[styles.menuIconBox, { backgroundColor: theme.colors.surface }]}>
-                <Ionicons name={icon} size={20} color={theme.colors.text} />
+            <View style={[styles.menuIconContainer, { backgroundColor: (color || theme.colors.primary) + '15' }]}>
+                <Ionicons name={icon} size={20} color={color || theme.colors.text} />
             </View>
             <Text style={[styles.menuLabel, { color: theme.colors.text }]}>{label}</Text>
         </View>
-        <Ionicons name="chevron-forward" size={16} color={theme.colors.textSecondary} />
+        <Ionicons name="chevron-forward" size={16} color={theme.colors.textTertiary} />
     </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: defaultTheme.colors.background,
     },
     header: {
         flexDirection: 'row',
@@ -145,27 +213,24 @@ const styles = StyleSheet.create({
         paddingHorizontal: defaultTheme.spacing.md,
         paddingBottom: defaultTheme.spacing.md,
         borderBottomWidth: 1,
-        borderBottomColor: defaultTheme.colors.border,
     },
     closeButton: {
         width: 40,
         height: 40,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: defaultTheme.colors.surfaceHighlight,
         borderRadius: 20,
     },
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: defaultTheme.colors.text,
     },
     content: {
-        padding: defaultTheme.spacing.md,
+        paddingBottom: 40,
     },
-    // Profile Card Styles (Glass)
+    // Profile Card Styles
     profileCard: {
-        borderRadius: 20,
+        borderRadius: 24,
         padding: 24,
         marginBottom: 24,
         borderWidth: 1,
@@ -180,9 +245,9 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
     avatarContainer: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         borderWidth: 2,
         justifyContent: 'center',
         alignItems: 'center',
@@ -191,15 +256,15 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         right: 0,
-        width: 20,
-        height: 20,
-        borderRadius: 10,
+        width: 22,
+        height: 22,
+        borderRadius: 11,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
     },
     avatarText: {
-        fontSize: 24,
+        fontSize: 26,
         fontWeight: 'bold',
     },
     profileInfo: {
@@ -212,30 +277,21 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     userName: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '700',
     },
     proBadge: {
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 6,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
     },
     proBadgeText: {
         fontSize: 10,
-        fontWeight: '700',
+        fontWeight: '800',
+        letterSpacing: 0.5,
     },
     userHandle: {
-        fontSize: 14,
-    },
-    editBtn: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        borderWidth: 1,
-    },
-    editBtnText: {
-        fontSize: 13,
-        fontWeight: '600',
+        fontSize: 15,
     },
     divider: {
         height: 1,
@@ -252,18 +308,17 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     statValue: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 4,
     },
     statLabel: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '500',
     },
-
-    // Guest Card Styles (Glass)
+    // Guest Card Styles
     guestCard: {
-        borderRadius: 20,
+        borderRadius: 24,
         padding: 24,
         marginBottom: 24,
         borderWidth: 1,
@@ -274,9 +329,9 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     guestIconBox: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
@@ -296,55 +351,71 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 12,
-        borderRadius: 12,
+        paddingVertical: 14,
+        borderRadius: 16,
         borderWidth: 1,
     },
     loginButtonText: {
         fontSize: 16,
         fontWeight: '600',
     },
-    menuItems: {
-        gap: 12,
+    // Section Styles
+    sectionContainer: {
+        marginBottom: 24,
+    },
+    sectionTitle: {
+        fontSize: 13,
+        fontWeight: '600',
+        marginBottom: 8,
+        marginLeft: 4,
+        letterSpacing: 0.5,
+    },
+    sectionContent: {
+        borderRadius: 16,
+        borderWidth: 1,
+        overflow: 'hidden',
     },
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 12,
+        paddingVertical: 16,
         paddingHorizontal: 16,
-        backgroundColor: defaultTheme.colors.surfaceHighlight,
-        borderRadius: 12,
     },
     menuItemLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        gap: 16,
     },
-    menuIconBox: {
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-        backgroundColor: defaultTheme.colors.surface,
+    menuIconContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
     },
     menuLabel: {
         fontSize: 16,
-        color: defaultTheme.colors.text,
         fontWeight: '500',
     },
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: defaultTheme.spacing.xl * 2,
+        marginTop: 8,
+        marginBottom: 24,
         gap: 8,
-        paddingVertical: 12,
+        paddingVertical: 16,
+        borderRadius: 16,
     },
     logoutText: {
-        color: '#ef4444',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '600',
     },
+    versionText: {
+        textAlign: 'center',
+        fontSize: 12,
+        marginTop: -10,
+        marginBottom: 20,
+    }
 });

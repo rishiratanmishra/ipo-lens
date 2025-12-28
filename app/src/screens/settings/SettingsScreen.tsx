@@ -114,31 +114,7 @@ export default function SettingsScreen() {
                     () => Alert.alert("Coming Soon", "Password change flow not implemented yet.")
                 )}
 
-                {renderSectionHeader("About & Support")}
-                {renderSettingItem(
-                    "document-text-outline",
-                    "Terms of Service",
-                    "",
-                    () => { }
-                )}
-                {renderSettingItem(
-                    "shield-checkmark-outline",
-                    "Privacy Policy",
-                    "",
-                    () => { }
-                )}
-                {renderSettingItem(
-                    "star-outline",
-                    "Rate App",
-                    "",
-                    () => Alert.alert("Rate Us", "Opening store page...")
-                )}
-                {renderSettingItem(
-                    "information-circle-outline",
-                    "App Version",
-                    "1.0.0",
-                    () => { }
-                )}
+
 
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>IPO Lens v1.0.0</Text>

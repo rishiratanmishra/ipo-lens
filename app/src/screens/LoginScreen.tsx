@@ -9,7 +9,7 @@ export default function LoginScreen({ navigation }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const { login, isLoading } = useContext(AuthContext);
+    const { login, isLoading, skipLogin } = useContext(AuthContext);
     const { theme } = useTheme();
 
     const handleLogin = async () => {
@@ -30,6 +30,19 @@ export default function LoginScreen({ navigation }) {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
             <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
+                <TouchableOpacity
+                    style={styles.skipButton}
+                    onPress={skipLogin}
+                >
+                    <View style={[styles.skipChip, {
+                        backgroundColor: theme.colors.surfaceHighlight,
+                        borderColor: theme.colors.primary + '40' // Add some transparency to border if needed, or just use primary
+                    }]}>
+                        <Text style={[styles.skipText, { color: theme.colors.primary }]}>Skip Login</Text>
+                        <Ionicons name="arrow-forward" size={14} color={theme.colors.primary} />
+                    </View>
+                </TouchableOpacity>
+
                 <View style={styles.header}>
                     <View style={styles.logoContainer}>
                         <View style={[styles.logoBox, { backgroundColor: theme.colors.surfaceHighlight, borderColor: theme.colors.border }]}>
@@ -287,5 +300,25 @@ const styles = StyleSheet.create({
     link: {
         color: defaultTheme.colors.textSecondary,
         textDecorationLine: 'underline',
+    },
+    skipButton: {
+        position: 'absolute',
+        bottom: defaultTheme.spacing.xl,
+        // right: defaultTheme.spacing.lg,
+        alignSelf: 'center',
+        zIndex: 10,
+    },
+    skipChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        gap: 6,
+        borderWidth: 1,
+    },
+    skipText: {
+        fontSize: 14,
+        fontWeight: '600',
     }
 });

@@ -96,7 +96,7 @@ export default function MenuScreen() {
                         </View>
                         <TouchableOpacity
                             style={[styles.loginButtonDisplay, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '10' }]}
-                            onPress={() => navigation.navigate('Login')}
+                            onPress={() => logout()}
                         >
                             <Text style={[styles.loginButtonText, { color: theme.colors.primary }]}>Log In / Sign Up</Text>
                         </TouchableOpacity>

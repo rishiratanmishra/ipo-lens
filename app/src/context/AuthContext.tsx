@@ -10,10 +10,12 @@ export interface User {
 
 interface AuthContextType {
     user: User | null;
+    isGuestMode: boolean;
     isLoading: boolean;
     login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
     register: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => Promise<void>;
+    skipLogin: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -24,6 +26,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [isGuestMode, setIsGuestMode] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     // Mutations
@@ -37,6 +40,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const loadUser = async () => {
         setIsLoading(true); // Initial load
         try {
+            const guest = await AsyncStorage.getItem('isGuest');
+            if (guest === 'true') {
+                setIsGuestMode(true);
+            }
+
             const userData = await AsyncStorage.getItem('user');
             if (userData) {
                 setUser(JSON.parse(userData));
@@ -49,11 +57,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     const login = async (username: string, password: string) => {
-        // We can rely on mutation isLoading if we want, but keeping general isLoading for now
-        // or just let mutation handle it.
-        // However, the context exposes a single isLoading.
-        // Let's rely on local + mutation loading if needed, or just set isLoading manually to cover async storage operations too.
-
         try {
             const response = await loginMutation.mutateAsync({ username, password });
 
@@ -64,7 +67,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     token: response.token
                 };
                 setUser(userData);
+                setIsGuestMode(false);
                 await AsyncStorage.setItem('user', JSON.stringify(userData));
+                await AsyncStorage.removeItem('isGuest');
                 return { success: true };
             }
             return { success: false, message: response.message || 'Login failed' };
@@ -90,16 +95,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const logout = async () => {
         setUser(null);
+        setIsGuestMode(false);
         await AsyncStorage.removeItem('user');
+        await AsyncStorage.removeItem('isGuest');
+    };
+
+    const skipLogin = async () => {
+        setIsGuestMode(true);
+        await AsyncStorage.setItem('isGuest', 'true');
     };
 
     return (
         <AuthContext.Provider value={{
             user,
+            isGuestMode,
             isLoading: isLoading || loginMutation.isPending || registerMutation.isPending,
             login,
             register,
-            logout
+            logout,
+            skipLogin
         }}>
             {children}
         </AuthContext.Provider>

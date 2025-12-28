@@ -4,7 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 
 import { useTheme } from "../context/ThemeContext";
-import { AuthProvider, AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext";
 
 import WelcomeScreen from "../screens/WelcomeScreen";
 import LoginScreen from "../screens/LoginScreen";
@@ -32,7 +32,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
     const { theme, isDark } = useTheme();
-    const { user, isLoading } = useContext(AuthContext);
+    const { user, isGuestMode, isLoading } = useContext(AuthContext);
 
     if (isLoading) {
         return (
@@ -55,7 +55,7 @@ function RootNavigator() {
                     cardStyle: { backgroundColor: theme.colors.background },
                 }}
             >
-                {user ? (
+                {user || isGuestMode ? (
                     // Screens for logged-in users
                     <>
                         <Stack.Screen name="Main" component={MainTabs} />
@@ -103,9 +103,7 @@ function RootNavigator() {
 export default function AppNavigator() {
     return (
         <NavigationContainer>
-            <AuthProvider>
-                <RootNavigator />
-            </AuthProvider>
+            <RootNavigator />
         </NavigationContainer>
     );
 }

@@ -43,7 +43,11 @@ export default function IPOListScreen({ navigation }) {
     };
 
     const renderItem = ({ item }) => (
-        <TouchableOpacity style={[styles.card, { backgroundColor: theme.colors.surfaceHighlight, shadowColor: theme.colors.text }]} onPress={() => navigation.navigate('IPODetail', { ipo: item })}>
+        <TouchableOpacity
+            activeOpacity={0.9}
+            style={[styles.card, { backgroundColor: theme.colors.surfaceHighlight, shadowColor: theme.colors.text }]}
+            onPress={() => navigation.navigate('IPODetail', { ipo: item })}
+        >
             <View style={styles.cardHeader}>
                 <View style={[styles.iconPlaceholder, { backgroundColor: theme.colors.background }]}>
                     <Text style={[styles.iconText, { color: theme.colors.primary }]}>{item.name ? item.name.charAt(0) : '?'}</Text>

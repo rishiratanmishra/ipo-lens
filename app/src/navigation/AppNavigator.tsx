@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import { createStackNavigator, CardStyleInterpolators } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 
 import { useTheme } from "../context/ThemeContext";
@@ -81,6 +81,9 @@ function RootNavigator() {
                                 },
                                 headerTintColor: theme.colors.text,
                                 headerTitleStyle: theme.typography.title,
+                                cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+                                gestureEnabled: true,
+                                gestureDirection: 'vertical',
                             }}
                         />
                         <Stack.Screen

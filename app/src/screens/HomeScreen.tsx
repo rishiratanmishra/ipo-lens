@@ -12,6 +12,7 @@ import { useIPOsInfinite, useMarketIndices } from '../services/queries';
 import SegmentedControl from '../components/common/SegmentedControl';
 import FilterChips from '../components/common/FilterChips';
 import EmptyState from '../components/common/EmptyState';
+import MarketIndexCard from '../components/common/MarketIndexCard';
 
 
 const { width } = Dimensions.get('window');
@@ -228,88 +229,34 @@ export default function HomeScreen({ navigation }) {
                 <View style={{ height: 85, marginBottom: 10 }}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tickerScroll}>
                         {/* NIFTY 50 */}
-                        <LinearGradient
-                            colors={theme.gradients.darkCard}
-                            style={[styles.tickerCard, { borderColor: theme.colors.border, position: 'relative' }]}
-                        >
-                            <View>
-                                <Text style={[styles.tickerLabel, { color: theme.colors.textSecondary }]}>NIFTY 50</Text>
-                                <Text style={[styles.tickerValue, { color: theme.colors.text }]}>
-                                    {marketIndices?.nifty.value || 'Loading...'}
-                                </Text>
-                            </View>
-                            <View style={[styles.trendBadge, { marginBottom: 25, backgroundColor: (marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
-                                <Ionicons
-                                    name={marketIndices?.nifty.isUp ? "arrow-up" : "arrow-down"}
-                                    size={12}
-                                    color={marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error}
-                                />
-                                <Text style={{ fontSize: 10, color: marketIndices?.nifty.isUp ? theme.colors.success : theme.colors.error, fontWeight: 'bold' }}>
-                                    {marketIndices?.nifty.change} ({marketIndices?.nifty.percentChange || '0.0%'})
-                                </Text>
-                            </View>
-                            {marketIndices?.nifty.isClosed && (
-                                <View style={{ position: 'absolute', bottom: 8, right: 12 }}>
-                                    <Text style={{ fontSize: 8, color: theme.colors.error, fontWeight: '700', opacity: 0.8 }}>MARKET CLOSED</Text>
-                                </View>
-                            )}
-                        </LinearGradient>
+                        <MarketIndexCard
+                            name="NIFTY 50"
+                            value={marketIndices?.nifty.value}
+                            change={marketIndices?.nifty.change}
+                            percentChange={marketIndices?.nifty.percentChange}
+                            isUp={marketIndices?.nifty.isUp}
+                            isClosed={marketIndices?.nifty.isClosed}
+                        />
 
                         {/* SENSEX */}
-                        <LinearGradient
-                            colors={theme.gradients.darkCard}
-                            style={[styles.tickerCard, { borderColor: theme.colors.border, position: 'relative' }]}
-                        >
-                            <View>
-                                <Text style={[styles.tickerLabel, { color: theme.colors.textSecondary }]}>SENSEX</Text>
-                                <Text style={[styles.tickerValue, { color: theme.colors.text }]}>
-                                    {marketIndices?.sensex.value || 'Loading...'}
-                                </Text>
-                            </View>
-                            <View style={[styles.trendBadge, { marginBottom: 25, backgroundColor: (marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
-                                <Ionicons
-                                    name={marketIndices?.sensex.isUp ? "arrow-up" : "arrow-down"}
-                                    size={12}
-                                    color={marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error}
-                                />
-                                <Text style={{ fontSize: 10, color: marketIndices?.sensex.isUp ? theme.colors.success : theme.colors.error, fontWeight: 'bold' }}>
-                                    {marketIndices?.sensex.change} ({marketIndices?.sensex.percentChange || '0.0%'})
-                                </Text>
-                            </View>
-                            {marketIndices?.sensex.isClosed && (
-                                <View style={{ position: 'absolute', bottom: 8, right: 12 }}>
-                                    <Text style={{ fontSize: 8, color: theme.colors.error, fontWeight: '700', opacity: 0.8 }}>MARKET CLOSED</Text>
-                                </View>
-                            )}
-                        </LinearGradient>
+                        <MarketIndexCard
+                            name="SENSEX"
+                            value={marketIndices?.sensex.value}
+                            change={marketIndices?.sensex.change}
+                            percentChange={marketIndices?.sensex.percentChange}
+                            isUp={marketIndices?.sensex.isUp}
+                            isClosed={marketIndices?.sensex.isClosed}
+                        />
 
                         {/* BANKNIFTY */}
-                        <LinearGradient
-                            colors={theme.gradients.darkCard}
-                            style={[styles.tickerCard, { borderColor: theme.colors.border, position: 'relative' }]}
-                        >
-                            <View>
-                                <Text style={[styles.tickerLabel, { color: theme.colors.textSecondary }]}>BANKNIFTY</Text>
-                                <Text style={[styles.tickerValue, { color: theme.colors.text }]}>
-                                    {marketIndices?.banknifty.value || 'Loading...'}
-                                </Text>
-                            </View>
-                            <View style={[styles.trendBadge, { marginBottom: 25, backgroundColor: (marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error) + '20' }]}>
-                                <Ionicons
-                                    name={marketIndices?.banknifty.isUp ? "arrow-up" : "arrow-down"}
-                                    size={12}
-                                    color={marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error}
-                                />
-                                <Text style={{ fontSize: 10, color: marketIndices?.banknifty.isUp ? theme.colors.success : theme.colors.error, fontWeight: 'bold' }}>
-                                    {marketIndices?.banknifty.change} ({marketIndices?.banknifty.percentChange || '0.0%'})
-                                </Text>
-                            </View>
-                            {marketIndices?.banknifty.isClosed && (
-                                <View style={{ position: 'absolute', bottom: 8, right: 12 }}>
-                                    <Text style={{ fontSize: 8, color: theme.colors.error, fontWeight: '700', opacity: 0.8 }}>MARKET CLOSED</Text>
-                                </View>
-                            )}
-                        </LinearGradient>
+                        <MarketIndexCard
+                            name="BANKNIFTY"
+                            value={marketIndices?.banknifty.value}
+                            change={marketIndices?.banknifty.change}
+                            percentChange={marketIndices?.banknifty.percentChange}
+                            isUp={marketIndices?.banknifty.isUp}
+                            isClosed={marketIndices?.banknifty.isClosed}
+                        />
 
                     </ScrollView>
                 </View>
@@ -379,21 +326,6 @@ const styles = StyleSheet.create({
     iconButton: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
 
     tickerScroll: { paddingHorizontal: 24, alignItems: 'center' },
-    tickerCard: {
-        padding: 12,
-        borderRadius: 16,
-        marginRight: 12,
-        width: 'auto',
-        height: 70,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderWidth: 1,
-
-    },
-    tickerLabel: { fontSize: 10, fontWeight: '700', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
-    tickerValue: { fontSize: 16, fontWeight: '700' },
-    trendBadge: { flexDirection: 'row', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, alignItems: 'center', gap: 2 },
 
     listContent: { paddingHorizontal: 24, paddingBottom: 100 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },

@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useMemo, useState } from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity, Dimensions, RefreshControl } from 'react-native';
+import { StyleSheet, TouchableOpacity, Dimensions, RefreshControl, View, ActivityIndicator } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import { useIPODetails } from '../services/queries';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
@@ -37,6 +38,8 @@ export default function IPODetailScreen({ navigation, route }) {
     const onRefresh = () => {
         refetch();
     };
+
+
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -167,10 +170,18 @@ export default function IPODetailScreen({ navigation, route }) {
         navigation.navigate('WebView', { url, title });
     };
 
+    if (loading) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }]}>
+                <ActivityIndicator size="large" color={theme.colors.primary} />
+            </View>
+        );
+    }
+
     return (
         <ScrollView
             style={[styles.container, { backgroundColor: theme.colors.background }]}
-            contentContainerStyle={{ paddingBottom: 40 }}
+            contentContainerStyle={{ padding: defaultTheme.spacing.md, paddingBottom: 40 }}
             refreshControl={
                 <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />
             }
@@ -232,6 +243,5 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: defaultTheme.colors.background,
-        padding: defaultTheme.spacing.md,
     },
 });

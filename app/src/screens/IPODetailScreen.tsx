@@ -1,6 +1,6 @@
-import React, { useLayoutEffect, useMemo, useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, RefreshControl } from 'react-native';
-import { getIPODetails, IPODetails } from '../services/api';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
+import { StyleSheet, ScrollView, TouchableOpacity, Dimensions, RefreshControl } from 'react-native';
+import { useIPODetails } from '../services/queries';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
@@ -21,42 +21,21 @@ const { width } = Dimensions.get('window');
 
 export default function IPODetailScreen({ navigation, route }) {
     const { ipo } = route.params || {};
-    const [details, setDetails] = useState<IPODetails | null>(null);
-    const [loading, setLoading] = useState(true);
     const { theme } = useTheme();
+
+    // TanStack Query
+    const {
+        data: details = null,
+        isLoading: loading,
+        isRefetching,
+        refetch
+    } = useIPODetails(ipo?.id);
 
     const companyName = ipo?.name || details?.ipo_name || 'IPO Details';
     const tag = ipo?.is_sme ? 'SME IPO' : 'Mainboard IPO';
 
-    const [refreshing, setRefreshing] = useState(false);
-
-    // Extracted fetch function
-    const fetchDetails = async () => {
-        if (!ipo?.id) {
-            setLoading(false);
-            return;
-        }
-
-        try {
-            const data = await getIPODetails(ipo.id);
-            if (data) {
-                setDetails(data);
-            }
-        } catch (e) {
-            console.log("Error fetching details", e);
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchDetails();
-    }, [ipo?.id]);
-
     const onRefresh = () => {
-        setRefreshing(true);
-        fetchDetails();
+        refetch();
     };
 
     useLayoutEffect(() => {
@@ -193,7 +172,7 @@ export default function IPODetailScreen({ navigation, route }) {
             style={[styles.container, { backgroundColor: theme.colors.background }]}
             contentContainerStyle={{ paddingBottom: 40 }}
             refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+                <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />
             }
         >
             <IPOTopCard

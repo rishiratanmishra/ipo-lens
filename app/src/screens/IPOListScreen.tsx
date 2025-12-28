@@ -1,61 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getIPOs } from '../services/api';
+import { useIPOsInfinite } from '../services/queries';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
 
 export default function IPOListScreen({ navigation }) {
-    const [ipos, setIpos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
     const { theme } = useTheme();
 
-    useEffect(() => {
-        loadData(1);
-    }, []);
+    // Fetch all IPOs (undefined status)
+    const {
+        data,
+        isLoading,
+        hasNextPage,
+        fetchNextPage,
+        isFetchingNextPage,
+        refetch,
+        isRefetching
+    } = useIPOsInfinite(undefined, undefined, 20);
 
-    const loadData = async (pageNum) => {
-        if (pageNum === 1) setLoading(true);
-        else setLoadingMore(true);
-
-        // Fetch flattened list (all statuses)
-        const { ipos: data } = await getIPOs(undefined, undefined, pageNum, 20);
-
-        if (pageNum === 1) {
-            setIpos(data);
-        } else {
-            setIpos(prev => [...prev, ...data]);
-        }
-
-        if (data.length < 5) { // Threshold to determine if more data exists (since we fetch multiple groups, 20 limit applies to each group potentially, but flattened result can be large. If flattened result is small, we are likely done).
-            // Actually, get_ipos.php slices EACH group by 20. So max result could be 20 * 3 = 60 items if all 3 groups are full.
-            // If we get 0 items, definitely done.
-            // Let's rely on data.length === 0 to stop.
-            if (data.length === 0) setHasMore(false);
-        }
-
-        setLoading(false);
-        setLoadingMore(false);
-        setRefreshing(false);
-    };
+    const ipos = data?.pages.flatMap(page => page.ipos) || [];
 
     const handleLoadMore = () => {
-        if (!loadingMore && hasMore && !loading) {
-            const nextPage = page + 1;
-            setPage(nextPage);
-            loadData(nextPage);
+        if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
         }
     };
 
     const onRefresh = () => {
-        setRefreshing(true);
-        setPage(1);
-        setHasMore(true);
-        loadData(1);
+        refetch();
     };
 
     const getStatusStyle = (status) => {
@@ -97,7 +70,7 @@ export default function IPOListScreen({ navigation }) {
                 </View>
             </View>
 
-            <View style={styles.cardBody}>
+            <View style={[styles.cardBody]}>
                 <View style={styles.infoCol}>
                     <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Price Band</Text>
                     <Text style={[styles.value, { color: theme.colors.text }]}>₹{item.min_price} - {item.max_price}</Text>
@@ -117,7 +90,7 @@ export default function IPOListScreen({ navigation }) {
         </TouchableOpacity>
     );
 
-    if (loading) return <ActivityIndicator size="large" color={theme.colors.primary} style={{ flex: 1, backgroundColor: theme.colors.background }} />;
+    if (isLoading) return <ActivityIndicator size="large" color={theme.colors.primary} style={{ flex: 1, backgroundColor: theme.colors.background }} />;
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
@@ -126,11 +99,11 @@ export default function IPOListScreen({ navigation }) {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
+                refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
                 ListEmptyComponent={<Text style={[styles.empty, { color: theme.colors.textSecondary }]}>No active IPOs available.</Text>}
                 onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.5}
-                ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 20 }} /> : null}
+                ListFooterComponent={isFetchingNextPage ? <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 20 }} /> : null}
             />
         </SafeAreaView>
     );

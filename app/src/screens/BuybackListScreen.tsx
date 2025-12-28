@@ -1,30 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { getBuybacks, Buyback } from '../services/api';
+import { useBuybacks } from '../services/queries';
+import { Buyback } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
 import SegmentedControl from '../components/common/SegmentedControl';
 
 export default function BuybackListScreen() {
     const { theme } = useTheme();
-    const [buybacks, setBuybacks] = useState<Buyback[]>([]);
-    const [filteredData, setFilteredData] = useState<Buyback[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-
     // Tabs configuration
     const tabs = ['Open', 'Upcoming', 'Closed'];
     const [activeTab, setActiveTab] = useState('Open');
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    // TanStack Query
+    const {
+        data: buybacks = [],
+        isLoading,
+        isRefetching,
+        refetch
+    } = useBuybacks();
+
+    const [filteredData, setFilteredData] = useState<Buyback[]>([]);
 
     useEffect(() => {
         if (buybacks.length > 0) {
             filterData();
+        } else {
+            setFilteredData([]);
         }
     }, [activeTab, buybacks]);
 
@@ -38,17 +41,8 @@ export default function BuybackListScreen() {
         setFilteredData(filtered);
     };
 
-    const loadData = async () => {
-        setLoading(true);
-        const data = await getBuybacks();
-        setBuybacks(data);
-        setLoading(false);
-        setRefreshing(false);
-    };
-
     const onRefresh = () => {
-        setRefreshing(true);
-        loadData();
+        refetch();
     };
 
     const formatCompanyName = (name: string) => {
@@ -113,7 +107,7 @@ export default function BuybackListScreen() {
         );
     };
 
-    if (loading && !refreshing) return (
+    if (isLoading && !isRefetching) return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
@@ -141,7 +135,7 @@ export default function BuybackListScreen() {
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContent}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+                    <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />
                 }
                 ListEmptyComponent={
                     <View style={{ alignItems: 'center', marginTop: 50 }}>

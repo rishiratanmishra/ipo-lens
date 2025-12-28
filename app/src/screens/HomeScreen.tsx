@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, Dimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +7,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme, theme } from '../theme';
-import { getIPOs, IPO, getMarketIndices, MarketIndex } from '../services/api';
+import { IPO } from '../services/api';
+import { useIPOsInfinite, useMarketIndices } from '../services/queries';
 import SegmentedControl from '../components/common/SegmentedControl';
 import FilterChips from '../components/common/FilterChips';
 
@@ -25,65 +26,35 @@ export default function HomeScreen({ navigation }) {
     const { theme } = useTheme();
     const [activeTab, setActiveTab] = useState('OPEN');
     const [isSme, setIsSme] = useState(false);
-    const [ipos, setIpos] = useState<IPO[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [marketIndices, setMarketIndices] = useState<{ nifty: MarketIndex, sensex: MarketIndex, banknifty: MarketIndex } | null>(null);
 
-    const loadData = useCallback(async (pageNumber = 1) => {
-        if (pageNumber === 1) setLoading(true);
-        else setLoadingMore(true);
+    // Queries
+    const {
+        data: marketData,
+        isLoading: marketLoading,
+        refetch: refetchMarket
+    } = useMarketIndices();
 
-        try {
-            const { ipos: data } = await getIPOs(activeTab, isSme ? 1 : 0, pageNumber);
+    const {
+        data: ipoData,
+        isLoading: iposLoading,
+        hasNextPage,
+        fetchNextPage,
+        isFetchingNextPage,
+        refetch: refetchIpos,
+        isRefetching
+    } = useIPOsInfinite(activeTab, isSme ? 1 : 0, 20);
 
-            if (pageNumber === 1) {
-                setIpos(data);
-            } else {
-                setIpos(prev => [...prev, ...data]);
-            }
-
-            setHasMore(data.length >= 20); // Assuming limit is 20
-            setPage(pageNumber);
-
-            if (pageNumber === 1) {
-                const indices = await getMarketIndices();
-                setMarketIndices(indices);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-            setLoadingMore(false);
-            setRefreshing(false);
-        }
-    }, [activeTab, isSme]);
-
-    useEffect(() => {
-        setPage(1);
-        setHasMore(true);
-        loadData(1);
-    }, [loadData]);
-
-    useFocusEffect(
-        useCallback(() => {
-        }, [activeTab, isSme])
-    );
+    const ipos = ipoData?.pages.flatMap(page => page.ipos) || [];
+    const marketIndices = marketData || null;
 
     const onRefresh = () => {
-        setRefreshing(true);
-        setPage(1);
-        setHasMore(true);
-        loadData(1);
+        refetchMarket();
+        refetchIpos();
     };
 
     const handleLoadMore = () => {
-        if (!loading && !loadingMore && hasMore) {
-            console.log("Loading more...", page + 1);
-            loadData(page + 1);
+        if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
         }
     };
 
@@ -347,7 +318,7 @@ export default function HomeScreen({ navigation }) {
                 />
 
                 {/* IPO List */}
-                {loading ? (
+                {iposLoading && !isRefetching ? (
                     <View style={styles.center}>
                         <ActivityIndicator size="large" color={theme.colors.primary} />
                     </View>
@@ -359,11 +330,11 @@ export default function HomeScreen({ navigation }) {
                         contentContainerStyle={styles.listContent}
                         showsVerticalScrollIndicator={false}
                         refreshControl={
-                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+                            <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />
                         }
                         onEndReached={handleLoadMore}
                         onEndReachedThreshold={0.5}
-                        ListFooterComponent={loadingMore ? <ActivityIndicator color={theme.colors.primary} style={{ marginVertical: 20 }} /> : null}
+                        ListFooterComponent={isFetchingNextPage ? <ActivityIndicator color={theme.colors.primary} style={{ marginVertical: 20 }} /> : null}
                         ListEmptyComponent={
                             <View style={styles.center}>
                                 <Text style={{ color: theme.colors.textSecondary, marginTop: 40, fontSize: 16 }}>No {activeTab.toLowerCase()} IPOs found</Text>

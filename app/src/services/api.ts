@@ -271,5 +271,49 @@ export const getIPODetails = async (id: number): Promise<IPODetails | null> => {
     }
 };
 
+
+export const loginUser = async (username: string, password: string): Promise<{ success: boolean; message?: string; token?: string; user_id?: number; user_display_name?: string }> => {
+    try {
+        const response = await axios.post('https://zolaha.com/ipo_app/admin_ipo/wp-json/jwt-auth/v1/token', {
+            username,
+            password
+        });
+
+        if (response.data.token) {
+            return {
+                success: true,
+                token: response.data.token,
+                user_id: response.data.user_id,
+                user_display_name: response.data.user_display_name
+            };
+        }
+        return { success: false, message: 'Invalid response' };
+    } catch (error: any) {
+        console.error("Login Error:", error);
+        const msg = error.response?.data?.message || error.message || 'Login failed';
+        return { success: false, message: msg };
+    }
+};
+
+export const registerUser = async (username: string, password: string): Promise<{ success: boolean; message?: string }> => {
+    try {
+        const response = await api.post('/register_user.php', {
+            username,
+            email: username,
+            password
+        });
+
+        if (response.data.success) {
+            return { success: true };
+        } else {
+            return { success: false, message: response.data.message || 'Registration failed' };
+        }
+    } catch (error: any) {
+        const msg = error.response?.data?.message || error.message || 'Network error';
+        return { success: false, message: msg };
+    }
+};
+
 export default api;
+
 

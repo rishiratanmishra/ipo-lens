@@ -87,8 +87,8 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase',
     },
     logoContainer: {
-        width: 72,
-        height: 72,
+        width: 60,
+        height: 60,
         borderRadius: 16,
         backgroundColor: '#fff',
         justifyContent: 'center',
@@ -99,14 +99,15 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 2,
         elevation: 2,
+        marginTop: 4,
     },
     logoImage: {
-        width: 60,
-        height: 60,
+        width: 40,
+        height: 40,
         borderRadius: 8,
     },
     logoText: {
-        fontSize: 28,
+        fontSize: 22,
         fontWeight: 'bold',
         color: defaultTheme.colors.primary,
     },
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
         minHeight: 72,
     },
     companyTitle: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
         color: defaultTheme.colors.text,
         marginBottom: 6,

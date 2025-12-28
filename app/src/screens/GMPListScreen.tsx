@@ -5,7 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { theme as defaultTheme } from '../theme';
-import { getIPOs, getGMPTrends, IPO } from '../services/api';
+import { IPO } from '../services/api';
+import { useGMPTrendsInfinite } from '../services/queries';
 import SegmentedControl from '../components/common/SegmentedControl';
 
 const { width } = Dimensions.get('window');
@@ -13,66 +14,40 @@ const { width } = Dimensions.get('window');
 export default function GMPListScreen({ navigation }) {
     const { theme } = useTheme();
     const [activeTab, setActiveTab] = useState('Mainboard');
-    const [ipos, setIpos] = useState<IPO[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [loadingMore, setLoadingMore] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState<string>('');
     const [selectedMinPremium, setSelectedMinPremium] = useState<number>(1);
     const [selectedMaxPremium, setSelectedMaxPremium] = useState<number | undefined>(undefined);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
     const [filterModalVisible, setFilterModalVisible] = useState(false);
     const [sortBy, setSortBy] = useState<'gmp_high' | 'gmp_low'>('gmp_high'); // Top Gainers by default
 
-    const fetchIPOs = useCallback(async (pageNumber: number, shouldAppend: boolean = false) => {
-        if (shouldAppend) {
-            setLoadingMore(true);
-        } else {
-            setLoading(true);
-        }
+    // TanStack Query
+    const {
+        data,
+        isLoading,
+        hasNextPage,
+        fetchNextPage,
+        isFetchingNextPage,
+        refetch,
+        isRefetching
+    } = useGMPTrendsInfinite(
+        20,
+        activeTab === 'SME' ? 1 : 0,
+        selectedStatus,
+        selectedMinPremium,
+        selectedMaxPremium,
+        sortBy
+    );
 
-        try {
-            const limit = 20;
-            const { ipos: data } = await getGMPTrends(
-                pageNumber,
-                limit,
-                activeTab === 'SME' ? 1 : 0,
-                selectedStatus,
-                selectedMinPremium,
-                selectedMaxPremium,
-                sortBy
-            );
+    const ipos = data?.pages.flatMap(page => page.ipos) || [];
 
-            if (shouldAppend) {
-                setIpos(prev => [...prev, ...data]);
-            } else {
-                setIpos(data);
-            }
-
-            setHasMore(data.length === limit);
-            setPage(pageNumber);
-        } catch (error) {
-            console.error("Failed to load GMP data", error);
-        } finally {
-            setLoading(false);
-            setLoadingMore(false);
-            setRefreshing(false);
-        }
-    }, [activeTab, selectedStatus, selectedMinPremium, selectedMaxPremium, sortBy]);
-
-    useEffect(() => {
-        fetchIPOs(1, false);
-    }, [fetchIPOs]);
 
     const onRefresh = () => {
-        setRefreshing(true);
-        fetchIPOs(1, false);
+        refetch();
     };
 
     const handleLoadMore = () => {
-        if (!loadingMore && !loading && hasMore) {
-            fetchIPOs(page + 1, true);
+        if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
         }
     };
 
@@ -152,7 +127,7 @@ export default function GMPListScreen({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-            {loading ? (
+            {isLoading && !isRefetching ? (
                 <View style={styles.centerContainer}>
                     <ActivityIndicator size="large" color={theme.colors.primary} />
                 </View>
@@ -164,7 +139,7 @@ export default function GMPListScreen({ navigation }) {
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
                     refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+                        <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />
                     }
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
@@ -178,7 +153,7 @@ export default function GMPListScreen({ navigation }) {
                     onEndReached={handleLoadMore}
                     onEndReachedThreshold={0.5}
                     ListFooterComponent={
-                        loadingMore ? (
+                        isFetchingNextPage ? (
                             <View style={{ padding: 20 }}>
                                 <ActivityIndicator size="small" color={theme.colors.primary} />
                             </View>

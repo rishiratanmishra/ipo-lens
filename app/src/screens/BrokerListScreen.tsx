@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, Image, Linking, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getBrokers, Broker } from '../services/api';
+import { useBrokers } from '../services/queries';
+import { Broker } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { SvgUri } from 'react-native-svg';
@@ -10,22 +11,31 @@ import SegmentedControl from '../components/common/SegmentedControl';
 
 export default function BrokerListScreen() {
     const { theme } = useTheme();
-    const [brokers, setBrokers] = useState<Broker[]>([]);
+
+    // TanStack Query
+    const {
+        data: brokers = [],
+        isLoading,
+        isRefetching,
+        refetch
+    } = useBrokers();
+
     const [filteredBrokers, setFilteredBrokers] = useState<Broker[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [selectedTab, setSelectedTab] = useState('All');
     const [tabs, setTabs] = useState(['All']);
 
     useEffect(() => {
-        loadData();
-    }, []);
-
-    const onRefresh = async () => {
-        setRefreshing(true);
-        await loadData();
-        setRefreshing(false);
-    };
+        if (brokers.length > 0) {
+            // Extract unique categories
+            const allCats = new Set<string>();
+            brokers.forEach(b => {
+                if (b.categories) {
+                    b.categories.forEach(c => allCats.add(c));
+                }
+            });
+            setTabs(['All', ...Array.from(allCats)]);
+        }
+    }, [brokers]);
 
     useEffect(() => {
         if (selectedTab === 'All') {
@@ -35,19 +45,8 @@ export default function BrokerListScreen() {
         }
     }, [selectedTab, brokers]);
 
-    const loadData = async () => {
-        const data = await getBrokers();
-        setBrokers(data);
-
-        // Extract unique categories
-        const allCats = new Set<string>();
-        data.forEach(b => {
-            if (b.categories) {
-                b.categories.forEach(c => allCats.add(c));
-            }
-        });
-        setTabs(['All', ...Array.from(allCats)]);
-        setLoading(false);
+    const onRefresh = async () => {
+        refetch();
     };
 
     const openLink = (url: string) => {
@@ -187,7 +186,7 @@ export default function BrokerListScreen() {
         </View>
     );
 
-    if (loading) {
+    if (isLoading && !isRefetching) {
         return (
             <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top', 'left', 'right']}>
                 <ActivityIndicator size="large" color={theme.colors.primary} style={{ flex: 1, marginTop: 50 }} />
@@ -225,7 +224,7 @@ export default function BrokerListScreen() {
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContent}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+                    <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={theme.colors.primary} />
                 }
                 ListEmptyComponent={<Text style={[styles.empty, { color: theme.colors.textSecondary }]}>No Brokers found in {selectedTab}.</Text>}
             />
@@ -312,7 +311,7 @@ const styles = StyleSheet.create({
     },
     logoPlaceholder: { width: 45, height: 45, justifyContent: 'center', alignItems: 'center' },
 
-    headerInfo: { flex: 1, paddingRight: 80 }, 
+    headerInfo: { flex: 1, paddingRight: 80 },
     name: { fontSize: 20, fontWeight: '700', marginBottom: 4 },
     ratingRow: { flexDirection: 'row', alignItems: 'center' },
     stars: { flexDirection: 'row', marginRight: 6 },

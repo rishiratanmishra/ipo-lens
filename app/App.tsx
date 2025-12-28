@@ -8,6 +8,8 @@ import { AuthProvider } from './src/context/AuthContext';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './src/services/queryClient';
 
+import OfflineNotice from './src/components/common/OfflineNotice';
+
 export default function App() {
   return (
     <SafeAreaProvider>
@@ -15,6 +17,7 @@ export default function App() {
         <ThemeProvider>
           <AuthProvider>
             <AppNavigator />
+            <OfflineNotice />
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>

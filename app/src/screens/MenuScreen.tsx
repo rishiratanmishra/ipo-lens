@@ -9,11 +9,13 @@ import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { useLegalPages } from '../services/queries';
 
 export default function MenuScreen() {
     const { user, logout } = useContext(AuthContext);
     const { theme } = useTheme();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    const { data: legalPages } = useLegalPages();
 
     const handleLogout = async () => {
         Alert.alert(
@@ -147,21 +149,34 @@ export default function MenuScreen() {
                 </MenuSection>
 
                 <MenuSection title="LEGAL" theme={theme}>
-                    <MenuItem
-                        icon="document-text-outline"
-                        label="Terms & Conditions"
-                        onPress={() => { }}
-                        theme={theme}
-                        color={theme.colors.textSecondary}
-                    />
-                    <MenuItem
-                        icon="shield-checkmark-outline"
-                        label="Privacy Policy"
-                        onPress={() => { }}
-                        theme={theme}
-                        color={theme.colors.textSecondary}
-                        isLast
-                    />
+                    {legalPages && legalPages.length > 0 ? (
+                        legalPages.map((page, index) => {
+                            // Simple decoder for common WP title entities
+                            const decodedTitle = page.title.rendered
+                                .replace(/&amp;/g, '&')
+                                .replace(/&#038;/g, '&')
+                                .replace(/&#8211;/g, '-')
+                                .replace(/&#8217;/g, "'");
+
+                            return (
+                                <MenuItem
+                                    key={page.id}
+                                    icon="document-text-outline"
+                                    label={decodedTitle}
+                                    onPress={() => navigation.navigate('LegalPage', {
+                                        title: decodedTitle,
+                                        content: page.content.rendered
+                                    })}
+                                    theme={theme}
+                                    color={theme.colors.textSecondary}
+                                    isLast={index === legalPages.length - 1}
+                                />
+                            );
+                        })
+                    ) : (
+                        // Fallback or empty state could be here, but we can leave empty or show a loader if needed.
+                        <Text style={{ padding: 16, color: theme.colors.textSecondary }}>No legal pages found.</Text>
+                    )}
                 </MenuSection>
 
                 {user && (

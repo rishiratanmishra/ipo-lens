@@ -153,3 +153,12 @@ export const useRegister = () => {
       mutationFn: ({ username, password }: { username: string; password: string }) => api.registerUser(username, password),
     });
 };
+
+// Legal Pages Hook
+export const useLegalPages = (options?: Partial<UseQueryOptions<api.LegalPage[], Error>>) => {
+    return useQuery({
+        queryKey: ['legalPages'],
+        queryFn: api.getLegalPages,
+        ...options,
+    });
+};

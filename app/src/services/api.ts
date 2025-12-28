@@ -332,6 +332,35 @@ export const registerUser = async (username: string, password: string): Promise<
     }
 };
 
+
+export interface LegalPage {
+    id: number;
+    title: {
+        rendered: string;
+    };
+    content: {
+        rendered: string;
+    };
+}
+
+export const getLegalPages = async (): Promise<LegalPage[]> => {
+    try {
+        // Adding query param to bypass potential caching
+        const response = await axios.get(`https://zolaha.com/ipo_app/admin_ipo/wp-json/your-ipo/v1/legal-pages/?_t=${new Date().getTime()}`);
+        return response.data;
+    } catch (error: any) {
+        if (axios.isAxiosError(error)) {
+            console.error("Error fetching Legal Pages:", error.message);
+            console.error("URL:", error.config?.url);
+            console.error("Status:", error.response?.status);
+            console.error("Response Body:", JSON.stringify(error.response?.data));
+        } else {
+            console.error("Error fetching Legal Pages:", error);
+        }
+        return [];
+    }
+};
+
 export default api;
 
 

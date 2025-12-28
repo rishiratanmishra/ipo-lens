@@ -229,5 +229,9 @@ export default function IPODetailScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: defaultTheme.colors.background, padding: defaultTheme.spacing.md },
+    container: {
+        flex: 1,
+        backgroundColor: defaultTheme.colors.background,
+        padding: defaultTheme.spacing.md,
+    },
 });

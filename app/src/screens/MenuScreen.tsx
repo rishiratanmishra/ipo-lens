@@ -109,14 +109,14 @@ export default function MenuScreen() {
                         label="Settings"
                         onPress={() => navigation.navigate('Settings')}
                         theme={theme}
-                        color={theme.colors.primary}
+                        color={theme.colors.textSecondary}
                     />
                     <MenuItem
                         icon="notifications-outline"
                         label="Notifications"
                         onPress={() => { }}
                         theme={theme}
-                        color={theme.colors.accent}
+                        color={theme.colors.textSecondary}
                         isLast
                     />
                 </MenuSection>
@@ -127,21 +127,21 @@ export default function MenuScreen() {
                         label="Help & Support"
                         onPress={() => { }}
                         theme={theme}
-                        color={theme.colors.warning}
+                        color={theme.colors.textSecondary}
                     />
                     <MenuItem
                         icon="chatbubble-ellipses-outline"
                         label="Send Feedback"
                         onPress={() => { }}
                         theme={theme}
-                        color={theme.colors.purple}
+                        color={theme.colors.textSecondary}
                     />
                     <MenuItem
                         icon="star-outline"
                         label="Rate App"
                         onPress={() => Alert.alert("Rate Us", "Opening store page...")}
                         theme={theme}
-                        color={theme.colors.gold}
+                        color={theme.colors.textSecondary}
                         isLast
                     />
                 </MenuSection>
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         padding: 24,
         marginBottom: 24,
-        borderWidth: 1,
+        // borderWidth: 1, // Removed to flatten the design
     },
     profileHeader: {
         flexDirection: 'row',
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         padding: 24,
         marginBottom: 24,
-        borderWidth: 1,
+        // borderWidth: 1, // Removed to flatten the design
     },
     guestContent: {
         flexDirection: 'row',
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     },
     sectionContent: {
         borderRadius: 16,
-        borderWidth: 1,
+        // borderWidth: 1, // Removed to flatten the design
         overflow: 'hidden',
     },
     menuItem: {

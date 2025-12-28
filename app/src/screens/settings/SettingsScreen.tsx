@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, Switch, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext';
+import { AuthContext } from '../../context/AuthContext';
 import { theme as defaultTheme } from '../../theme'; // Static theme for StyleSheet
 
 type ThemeOption = 'light' | 'dark' | 'system';
@@ -11,6 +12,7 @@ type ThemeOption = 'light' | 'dark' | 'system';
 export default function SettingsScreen() {
     const navigation = useNavigation();
     const { theme, mode, setMode } = useTheme();
+    const { user } = useContext(AuthContext);
 
     // Mock states for other toggles
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -45,12 +47,12 @@ export default function SettingsScreen() {
         isToggle: boolean = false
     ) => (
         <TouchableOpacity
-            style={[styles.itemContainer, { backgroundColor: theme.colors.surfaceHighlight }]}
+            style={[styles.itemContainer, { borderBottomColor: theme.colors.border }]}
             onPress={isToggle ? onPress : onPress}
             disabled={isToggle}
         >
             <View style={styles.itemLeft}>
-                <View style={[styles.iconBox, { backgroundColor: theme.colors.surface }]}>
+                <View style={[styles.iconBox, { backgroundColor: theme.colors.surfaceHighlight }]}>
                     <Ionicons name={icon} size={20} color={theme.colors.text} />
                 </View>
                 <Text style={[styles.itemLabel, { color: theme.colors.text }]}>{label}</Text>
@@ -99,19 +101,23 @@ export default function SettingsScreen() {
                     () => setThemeModalVisible(true)
                 )}
 
-                {renderSectionHeader("Security")}
-                {renderSettingItem(
-                    "finger-print-outline", // Corrected icon name from "finger_print" to "finger-print-outline"
-                    "Biometric Login",
-                    biometricEnabled,
-                    handleToggleBiometric,
-                    true
-                )}
-                {renderSettingItem(
-                    "lock-closed-outline",
-                    "Change Password",
-                    "",
-                    () => Alert.alert("Coming Soon", "Password change flow not implemented yet.")
+                {user && (
+                    <>
+                        {renderSectionHeader("Security")}
+                        {renderSettingItem(
+                            "finger-print-outline", // Corrected icon name from "finger_print" to "finger-print-outline"
+                            "Biometric Login",
+                            biometricEnabled,
+                            handleToggleBiometric,
+                            true
+                        )}
+                        {renderSettingItem(
+                            "lock-closed-outline",
+                            "Change Password",
+                            "",
+                            () => Alert.alert("Coming Soon", "Password change flow not implemented yet.")
+                        )}
+                    </>
                 )}
 
 
@@ -207,10 +213,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: defaultTheme.colors.surfaceHighlight,
+        // backgroundColor: defaultTheme.colors.surfaceHighlight, // Removed
         padding: 16,
-        borderRadius: 12,
-        marginBottom: 8,
+        // borderRadius: 12, // Removed
+        borderBottomWidth: 1, // Added
+        // marginBottom: 8, // Removed or reduced
     },
     itemLeft: {
         flexDirection: 'row',

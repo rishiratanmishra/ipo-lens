@@ -198,6 +198,7 @@ export interface MarketIndex {
     change: string;
     percentChange: string;
     isUp: boolean;
+    isClosed?: boolean;
     lastUpdated: string;
 }
 
@@ -219,6 +220,9 @@ export const getMarketIndices = async (): Promise<{ nifty: MarketIndex, sensex: 
             const change = price - prevClose;
             const percentChange = (change / prevClose) * 100;
             const time = new Date(meta.regularMarketTime * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+            
+            // Check market state: "CLOSED", "POST", "PRE", etc. (Yahoo usually sends 'REGULAR' when open)
+            const isClosed = meta.marketState !== 'REGULAR' && meta.marketState !== 'PREPRE';
 
             return {
                 name,
@@ -226,6 +230,7 @@ export const getMarketIndices = async (): Promise<{ nifty: MarketIndex, sensex: 
                 change: Math.abs(change).toFixed(2),
                 percentChange: Math.abs(percentChange).toFixed(2) + '%',
                 isUp: change >= 0,
+                isClosed,
                 lastUpdated: time
             };
         };

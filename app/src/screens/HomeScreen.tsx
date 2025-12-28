@@ -230,7 +230,7 @@ export default function HomeScreen({ navigation }) {
                         {/* NIFTY 50 */}
                         <LinearGradient
                             colors={theme.gradients.darkCard}
-                            style={[styles.tickerCard, { borderColor: theme.colors.border }]}
+                            style={[styles.tickerCard, { borderColor: theme.colors.border, position: 'relative' }]}
                         >
                             <View>
                                 <Text style={[styles.tickerLabel, { color: theme.colors.textSecondary }]}>NIFTY 50</Text>
@@ -248,12 +248,17 @@ export default function HomeScreen({ navigation }) {
                                     {marketIndices?.nifty.change} ({marketIndices?.nifty.percentChange || '0.0%'})
                                 </Text>
                             </View>
+                            {marketIndices?.nifty.isClosed && (
+                                <View style={{ position: 'absolute', bottom: 8, right: 12 }}>
+                                    <Text style={{ fontSize: 8, color: theme.colors.error, fontWeight: '700', opacity: 0.8 }}>MARKET CLOSED</Text>
+                                </View>
+                            )}
                         </LinearGradient>
 
                         {/* SENSEX */}
                         <LinearGradient
                             colors={theme.gradients.darkCard}
-                            style={[styles.tickerCard, { borderColor: theme.colors.border }]}
+                            style={[styles.tickerCard, { borderColor: theme.colors.border, position: 'relative' }]}
                         >
                             <View>
                                 <Text style={[styles.tickerLabel, { color: theme.colors.textSecondary }]}>SENSEX</Text>
@@ -271,12 +276,17 @@ export default function HomeScreen({ navigation }) {
                                     {marketIndices?.sensex.change} ({marketIndices?.sensex.percentChange || '0.0%'})
                                 </Text>
                             </View>
+                            {marketIndices?.sensex.isClosed && (
+                                <View style={{ position: 'absolute', bottom: 8, right: 12 }}>
+                                    <Text style={{ fontSize: 8, color: theme.colors.error, fontWeight: '700', opacity: 0.8 }}>MARKET CLOSED</Text>
+                                </View>
+                            )}
                         </LinearGradient>
 
                         {/* BANKNIFTY */}
                         <LinearGradient
                             colors={theme.gradients.darkCard}
-                            style={[styles.tickerCard, { borderColor: theme.colors.border }]}
+                            style={[styles.tickerCard, { borderColor: theme.colors.border, position: 'relative' }]}
                         >
                             <View>
                                 <Text style={[styles.tickerLabel, { color: theme.colors.textSecondary }]}>BANKNIFTY</Text>
@@ -294,6 +304,11 @@ export default function HomeScreen({ navigation }) {
                                     {marketIndices?.banknifty.change} ({marketIndices?.banknifty.percentChange || '0.0%'})
                                 </Text>
                             </View>
+                            {marketIndices?.banknifty.isClosed && (
+                                <View style={{ position: 'absolute', bottom: 8, right: 12 }}>
+                                    <Text style={{ fontSize: 8, color: theme.colors.error, fontWeight: '700', opacity: 0.8 }}>MARKET CLOSED</Text>
+                                </View>
+                            )}
                         </LinearGradient>
 
                     </ScrollView>

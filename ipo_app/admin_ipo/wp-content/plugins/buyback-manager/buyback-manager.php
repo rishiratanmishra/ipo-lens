@@ -12,6 +12,8 @@ define("BBM_URL", plugin_dir_url(__FILE__));
 
 include BBM_PATH . "class-bbm-admin.php";
 include BBM_PATH . "class-bbm-scraper.php";
+include BBM_PATH . "class-bbm-shortcode.php";
+// include BBM_PATH . "class-bbm-cpt.php"; // Deprecated: Using custom table instead
 
 // Table Name
 global $wpdb;

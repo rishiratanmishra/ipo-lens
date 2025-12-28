@@ -2,11 +2,19 @@
 class BBM_Scraper {
 
     public static function fetch_and_store() {
-
+        set_time_limit(300); // Allow 5 minutes for execution (vital for sleep delays)
         $url = "https://groww.in/buy-back";
         
+        $headers = [
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Referer'    => 'https://google.com'
+        ];
+
         $response = wp_remote_get($url, [
-            'user-agent' => 'Mozilla/5.0'
+            'user-agent' => $headers['User-Agent'], // WP uses this key specifically sometimes, but headers array is better
+            'headers'    => $headers,
+            'timeout'    => 30
         ]);
 
         if (is_wp_error($response)) {
@@ -85,13 +93,18 @@ class BBM_Scraper {
                 // ----------------------
                 if ($searchId) {
 
+                    // ANTI-BAN: Sleep before API call (2 seconds)
+                    sleep(2);
+
                     $api_url = "https://groww.in/v1/api/stocks_portfolio/v2/buyback/fetch?searchId=".$searchId;
 
                     $api_response = wp_remote_get($api_url, [
                         'headers' => [
-                            'User-Agent' => 'Mozilla/5.0',
-                            'accept' => 'application/json'
-                        ]
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                            'Accept'     => 'application/json',
+                            'Referer'    => 'https://groww.in/buy-back'
+                        ],
+                        'timeout' => 20
                     ]);
 
                     if (!is_wp_error($api_response)) {
@@ -139,11 +152,15 @@ class BBM_Scraper {
 
                                 if ($price_api) {
 
+                                    // Sleep slightly for price API too if needed, or rely on the previous sleep
+                                    // sleep(1); 
+
                                     $price_res = wp_remote_get($price_api, [
                                         'headers' => [
-                                            'User-Agent' => 'Mozilla/5.0',
-                                            'accept' => 'application/json'
-                                        ]
+                                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                                            'Accept'     => 'application/json'
+                                        ],
+                                        'timeout' => 15
                                     ]);
 
                                     if (!is_wp_error($price_res)) {

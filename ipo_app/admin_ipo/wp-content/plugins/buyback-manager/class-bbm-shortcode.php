@@ -12,6 +12,8 @@ function assets(){
 }
 
 function render(){
+ global $wpdb;
+ $table_name = BBM_TABLE;
  $tabs=["OPEN"=>"Open","UPCOMING"=>"Upcoming","CLOSED"=>"Closed"];
 
  ob_start();
@@ -19,43 +21,52 @@ function render(){
 
  echo "<ul class='bbm-tab-nav'>";
  foreach($tabs as $k=>$v){
+    // Determine active class for first tab could be handled here or via JS defaults
     echo "<li data-tab='$k'>$v</li>";
  }
  echo "</ul>";
 
  foreach($tabs as $k=>$v){
 
-    $posts=get_posts([
-        "post_type"=>"buybacks",
-        "meta_key"=>"bbm_type",
-        "meta_value"=>$k,
-        "posts_per_page"=>10
-    ]);
+    // Query Custom Table
+    // Use prepared statement for safety even though $k is internal array key
+    $posts = $wpdb->get_results(
+        $wpdb->prepare("SELECT * FROM $table_name WHERE type = %s ORDER BY id DESC LIMIT 20", $v) // Matching 'Open', 'Upcoming' from values
+    );
 
     echo "<div class='bbm-tab' id='tab_$k'>";
 
-    foreach($posts as $p){
+    if($posts){
+        foreach($posts as $p){
 
-        $price=get_post_meta($p->ID,'bbm_price',true);
-        $status=get_post_meta($p->ID,'bbm_status',true);
-        $logo=get_post_meta($p->ID,'bbm_logo',true);
-
-        echo "<div class='bm-broker-card'>
-        <div class='bm-card-inner'>
-            <div class='bm-col-logo'>
-                <div class='bm-logo-wrapper'>".
-                ($logo?"<img src='$logo' class='bm-logo'>":"No Logo")
-                ."</div>
-            </div>
-            <div class='bm-col-details'>
-                <h3>{$p->post_title}</h3>
-                <div class='bm-meta-row'>
-                    <span>$price</span>
-                    <span>$status</span>
+            // Map DB columns to variables
+            // DB: company, price, status, logo, market_price...
+            $price   = esc_html($p->price);
+            $status  = esc_html($p->status);
+            $logo    = esc_url($p->logo);
+            $title   = esc_html($p->company);
+            
+            // Optional: Format Price or add labels
+            
+            echo "<div class='bm-broker-card'>
+            <div class='bm-card-inner'>
+                <div class='bm-col-logo'>
+                    <div class='bm-logo-wrapper'>".
+                    ($logo ? "<img src='$logo' class='bm-logo'>" : "<span>No Logo</span>")
+                    ."</div>
+                </div>
+                <div class='bm-col-details'>
+                    <h3>{$title}</h3>
+                    <div class='bm-meta-row'>
+                        <span class='bm-price'>Ask: $price</span>
+                        <span class='bm-status'>$status</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        </div>";
+            </div>";
+        }
+    } else {
+        echo "<p>No entries found for $v.</p>";
     }
     echo "</div>";
  }

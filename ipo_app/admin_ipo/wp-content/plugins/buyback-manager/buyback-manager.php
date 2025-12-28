@@ -30,6 +30,11 @@ function bbm_install_table() {
         status varchar(100) DEFAULT '',
         type varchar(50) DEFAULT '',
         logo varchar(255) DEFAULT '',
+        market_price varchar(100) DEFAULT '',
+        record_date varchar(100) DEFAULT '',
+        period varchar(255) DEFAULT '',
+        issue_size varchar(100) DEFAULT '',
+        shares varchar(100) DEFAULT '',
         updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY  (id),
         UNIQUE KEY company_type (company, type)

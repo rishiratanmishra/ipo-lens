@@ -24,8 +24,34 @@ if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
     exit;
 }
 
-// Fetch from Custom SQL Table
-$results = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id DESC");
+// Parameters
+$page = isset($_GET['page']) ? (int)$_GET['page'] : null;
+$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : null;
+$status_filter = isset($_GET['status']) ? $_GET['status'] : null; // e.g., 'Open', 'Closed'
+
+$where_clause = "";
+if ($status_filter) {
+    // Sanitize
+    $status_esc = $wpdb->_real_escape($status_filter);
+    $where_clause = "WHERE type = '$status_esc'";
+}
+
+// Pagination Logic
+$limit_clause = "";
+$offset = 0;
+if ($page && $limit) {
+    $offset = ($page - 1) * $limit;
+    $limit_clause = "LIMIT $limit OFFSET $offset";
+}
+
+// Get Total Count for Pagination
+$total_query = "SELECT COUNT(*) FROM $table_name $where_clause";
+$total_records = $wpdb->get_var($total_query);
+$total_pages = ($limit) ? ceil($total_records / $limit) : 1;
+
+// Fetch Data
+$query = "SELECT * FROM $table_name $where_clause ORDER BY id ASC $limit_clause";
+$results = $wpdb->get_results($query);
 
 $response = [
     "OPEN" => [],
@@ -67,10 +93,23 @@ if ($results) {
              $response[$key][] = $item;
         } else {
              if (!empty($key)) {
+                // If the key is not one of the standard ones, just add it (or ignore)
+                // If we are filtering by a specific status, ensuring it lands in the right bucket
+                if (!isset($response[$key])) $response[$key] = [];
                 $response[$key][] = $item;
              }
         }
     }
+}
+
+// Attach Pagination Meta if requested
+if ($page || $limit) {
+    $response['pagination'] = [
+        'total_records' => $total_records,
+        'total_pages' => $total_pages,
+        'current_page' => $page ?: 1,
+        'limit' => $limit ?: $total_records
+    ];
 }
 
 echo json_encode($response);

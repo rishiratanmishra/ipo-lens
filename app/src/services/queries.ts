@@ -54,12 +54,36 @@ export const useIPOsInfinite = (
   });
 };
 
-export const useBuybacks = (options?: Partial<UseQueryOptions<api.Buyback[], Error>>) => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.buybacks],
-    queryFn: api.getBuybacks,
-    ...options,
-  });
+export const useBuybacks = (
+    page: number = 1, 
+    limit: number = 20, 
+    status?: string, 
+    options?: Partial<UseQueryOptions<any, Error>>
+) => {
+    return useQuery({
+        queryKey: [QUERY_KEYS.buybacks, page, limit, status],
+        queryFn: () => api.getBuybacks(page, limit, status),
+        select: (data) => data.buybacks, // Maintain backward compatibility by returning just array
+        ...options,
+    });
+};
+
+export const useBuybacksInfinite = (
+    limit: number = 10,
+    status?: string,
+    options?: Partial<UseInfiniteQueryOptions<any, Error>>
+) => {
+    return useInfiniteQuery({
+        queryKey: [QUERY_KEYS.buybacks, 'infinite', limit, status],
+        queryFn: ({ pageParam = 1 }) => api.getBuybacks(pageParam as number, limit, status),
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, allPages) => {
+            const hasMore = lastPage.buybacks.length === limit;
+            if (!hasMore) return undefined;
+            return allPages.length + 1;
+        },
+        ...options,
+    });
 };
 
 export const useBrokers = (options?: Partial<UseQueryOptions<api.Broker[], Error>>) => {

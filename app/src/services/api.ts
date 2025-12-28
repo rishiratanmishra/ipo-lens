@@ -46,6 +46,9 @@ export interface Buyback {
     logo?: string;
     record_date?: string;
     current_market_price?: string;
+    period?: string;
+    issue_size?: string;
+    shares?: string;
 }
 
 export interface Broker {
@@ -107,21 +110,36 @@ export const getIPOs = async (status?: string, is_sme?: number, page: number = 1
     }
 };
 
-export const getBuybacks = async (): Promise<Buyback[]> => {
+export const getBuybacks = async (
+    page: number = 1,
+    limit: number = 10,
+    status?: string
+): Promise<{ buybacks: Buyback[], pagination: any }> => {
     try {
-        const response = await api.get('/get_buybacks.php');
+        const response = await api.get('/get_buybacks.php', {
+            params: {
+                page,
+                limit,
+                status // e.g. 'Open', 'Upcoming', 'Closed'
+            }
+        });
         const data = response.data;
         
-        // The API now returns { OPEN: [], UPCOMING: [], CLOSED: [] }
-        // Flatten into a single array for the UI
-        return [
+        // The API returns { OPEN: [], UPCOMING: [], CLOSED: [], pagination: {} }
+        // We flatten into a single array. If 'status' was passed, other keys are likely empty anyway.
+        const buybacks = [
             ...(data.OPEN || []),
             ...(data.UPCOMING || []),
             ...(data.CLOSED || [])
         ];
+
+        return {
+            buybacks,
+            pagination: data.pagination || {}
+        };
     } catch (error) {
         console.error("Error fetching Buybacks:", error);
-        return [];
+        return { buybacks: [], pagination: {} };
     }
 };
 

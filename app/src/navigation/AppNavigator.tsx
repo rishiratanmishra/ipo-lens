@@ -18,6 +18,8 @@ import { IPO } from "../services/api";
 import MainTabs from "./MainTabs";
 import { ActivityIndicator, View } from "react-native";
 
+import CustomSplashScreen from "../screens/SplashScreen";
+
 export type RootStackParamList = {
     Welcome: undefined;
     Login: undefined;
@@ -36,20 +38,13 @@ function RootNavigator() {
     const { theme, isDark } = useTheme();
     const { user, isGuestMode, isLoading } = useContext(AuthContext);
 
-    if (isLoading) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
-        );
-    }
-
     return (
         <>
             <StatusBar
                 style={isDark ? "light" : "dark"}
                 backgroundColor={theme.colors.background}
             />
+            <CustomSplashScreen isAppReady={!isLoading} />
             <Stack.Navigator
                 id="RootStack"
                 screenOptions={{

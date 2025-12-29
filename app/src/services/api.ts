@@ -222,7 +222,8 @@ export const getMarketIndices = async (): Promise<{ nifty: MarketIndex, sensex: 
             const time = new Date(meta.regularMarketTime * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
             
             // Check market state: "CLOSED", "POST", "PRE", etc. (Yahoo usually sends 'REGULAR' when open)
-            const isClosed = meta.marketState !== 'REGULAR' && meta.marketState !== 'PREPRE';
+            console.log(`[${name}] Market State:`, meta.marketState);
+            const isClosed = ['CLOSED', 'POST', 'POSTPOST'].includes(meta.marketState);
 
             return {
                 name,

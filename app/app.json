@@ -27,7 +27,14 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-web-browser"
-    ]
+      "expo-web-browser",
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0f3f477b-356d-428b-b832-93de4a2db690"
+      }
+    },
+    "owner": "rishiratanmishra"
   }
 }

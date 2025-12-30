@@ -86,8 +86,8 @@ export default function MenuScreen() {
                         </View>
                     </View>
                 ) : (
-                    <View style={[styles.guestCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                        <View style={styles.guestContent}>
+                    <View style={[styles.guestCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, display: 'none' }]}>
+                        {/* <View style={styles.guestContent}>
                             <View style={[styles.guestIconBox, { backgroundColor: theme.colors.surfaceHighlight }]}>
                                 <Ionicons name="person-outline" size={28} color={theme.colors.text} />
                             </View>
@@ -95,13 +95,13 @@ export default function MenuScreen() {
                                 <Text style={[styles.guestTitle, { color: theme.colors.text }]}>Welcome Investor</Text>
                                 <Text style={[styles.guestSubtitle, { color: theme.colors.textSecondary }]}>Log in to manage your portfolio</Text>
                             </View>
-                        </View>
+                        </View> */}
                         {/* <TouchableOpacity
-                            style={[styles.loginButtonDisplay, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '10' }]}
-                            onPress={() => logout()}
-                        >
-                            <Text style={[styles.loginButtonText, { color: theme.colors.primary }]}>Log In / Sign Up</Text>
-                        </TouchableOpacity> */}
+                             style={[styles.loginButtonDisplay, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '10' }]}
+                             onPress={() => logout()}
+                         >
+                             <Text style={[styles.loginButtonText, { color: theme.colors.primary }]}>Log In / Sign Up</Text>
+                         </TouchableOpacity> */}
                     </View>
                 )}
 
@@ -113,14 +113,14 @@ export default function MenuScreen() {
                         theme={theme}
                         color={theme.colors.textSecondary}
                     />
-                    <MenuItem
+                    {/* <MenuItem
                         icon="notifications-outline"
                         label="Notifications"
                         onPress={() => { }}
                         theme={theme}
                         color={theme.colors.textSecondary}
                         isLast
-                    />
+                    /> */}
                 </MenuSection>
 
                 <MenuSection title="SUPPORT" theme={theme}>

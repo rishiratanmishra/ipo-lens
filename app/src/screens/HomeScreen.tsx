@@ -204,18 +204,18 @@ export default function HomeScreen({ navigation }) {
                 {/* Custom Header */}
                 <View style={[styles.header]}>
                     <View>
-                        <Text style={[styles.welcomeText, { color: theme.colors.textSecondary }]}>Welcome back,</Text>
+                        {/* <Text style={[styles.welcomeText, { color: theme.colors.textSecondary }]}>Welcome back,</Text>
                         <Text style={[styles.userName, { color: theme.colors.white }]}>
                             {user ? user.username.split(' ')[0] : 'Investor'}
-                        </Text>
+                        </Text> */}
                     </View>
                     <View style={{ flexDirection: 'row', gap: 12 }}>
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                             style={[styles.iconButton, { backgroundColor: theme.colors.surfaceHighlight }]}
                             onPress={() => console.log("Notifications")}
                         >
                             <Ionicons name="notifications" size={20} color={theme.colors.text} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         <TouchableOpacity
                             style={[styles.iconButton, { backgroundColor: theme.colors.surfaceHighlight, borderWidth: 1, borderColor: theme.colors.primary + '50' }]}
                             onPress={() => navigation.navigate('Menu')}

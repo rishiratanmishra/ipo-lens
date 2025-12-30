@@ -7,8 +7,8 @@ import { useTheme } from "../context/ThemeContext";
 import { AuthContext } from "../context/AuthContext";
 
 import WelcomeScreen from "../screens/WelcomeScreen";
-import LoginScreen from "../screens/LoginScreen";
-import RegisterScreen from "../screens/RegisterScreen";
+// import LoginScreen from "../screens/LoginScreen";
+// import RegisterScreen from "../screens/RegisterScreen";
 import MenuScreen from "../screens/MenuScreen";
 import SettingsScreen from "../screens/settings/SettingsScreen";
 import IPODetailScreen from "../screens/IPODetailScreen";
@@ -22,8 +22,8 @@ import CustomSplashScreen from "../screens/SplashScreen";
 
 export type RootStackParamList = {
     Welcome: undefined;
-    Login: undefined;
-    Register: undefined;
+    // Login: undefined;
+    // Register: undefined;
     Main: undefined;
     Menu: undefined;
     Settings: undefined;
@@ -52,65 +52,65 @@ function RootNavigator() {
                     cardStyle: { backgroundColor: theme.colors.background },
                 }}
             >
-                {user || isGuestMode ? (
-                    // Screens for logged-in users
-                    <>
-                        <Stack.Screen name="Main" component={MainTabs} />
-                        <Stack.Screen
-                            name="Menu"
-                            component={MenuScreen}
-                            options={{ presentation: "modal" }}
-                        />
-                        <Stack.Screen name="Settings" component={SettingsScreen} />
-                        <Stack.Screen
-                            name="IPODetail"
-                            component={IPODetailScreen}
-                            options={{
-                                headerShown: true,
-                                title: "IPO Details",
-                                headerStyle: {
-                                    backgroundColor: theme.colors.surface,
-                                    elevation: 0,
-                                    shadowOpacity: 0,
-                                    borderBottomWidth: 0,
-                                },
-                                headerTintColor: theme.colors.text,
-                                headerTitleStyle: theme.typography.title,
-                                cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
-                                gestureEnabled: true,
-                                gestureDirection: 'vertical',
-                            }}
-                        />
-                        <Stack.Screen
-                            name="WebView"
-                            component={WebViewScreen}
-                            options={{ headerShown: true }}
-                        />
-                        <Stack.Screen
-                            name="LegalPage"
-                            component={LegalPageScreen}
-                            options={({ route }) => ({
-                                headerShown: true,
-                                title: route.params.title,
-                                headerStyle: {
-                                    backgroundColor: theme.colors.surface,
-                                    elevation: 0,
-                                    shadowOpacity: 0,
-                                    borderBottomWidth: 0,
-                                },
-                                headerTintColor: theme.colors.text,
-                                headerTitleStyle: theme.typography.title,
-                            })}
-                        />
-                    </>
-                ) : (
+                {/* {user || isGuestMode ? ( */}
+                {/* // Screens for logged-in users */}
+                {/* <> */}
+                <Stack.Screen name="Main" component={MainTabs} />
+                <Stack.Screen
+                    name="Menu"
+                    component={MenuScreen}
+                    options={{ presentation: "modal" }}
+                />
+                <Stack.Screen name="Settings" component={SettingsScreen} />
+                <Stack.Screen
+                    name="IPODetail"
+                    component={IPODetailScreen}
+                    options={{
+                        headerShown: true,
+                        title: "IPO Details",
+                        headerStyle: {
+                            backgroundColor: theme.colors.surface,
+                            elevation: 0,
+                            shadowOpacity: 0,
+                            borderBottomWidth: 0,
+                        },
+                        headerTintColor: theme.colors.text,
+                        headerTitleStyle: theme.typography.title,
+                        cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+                        gestureEnabled: true,
+                        gestureDirection: 'vertical',
+                    }}
+                />
+                <Stack.Screen
+                    name="WebView"
+                    component={WebViewScreen}
+                    options={{ headerShown: true }}
+                />
+                <Stack.Screen
+                    name="LegalPage"
+                    component={LegalPageScreen}
+                    options={({ route }) => ({
+                        headerShown: true,
+                        title: route.params.title,
+                        headerStyle: {
+                            backgroundColor: theme.colors.surface,
+                            elevation: 0,
+                            shadowOpacity: 0,
+                            borderBottomWidth: 0,
+                        },
+                        headerTintColor: theme.colors.text,
+                        headerTitleStyle: theme.typography.title,
+                    })}
+                />
+                {/* </> */}
+                {/* ) : (
                     // Screens for guests / not logged in
                     <>
                         <Stack.Screen name="Welcome" component={WelcomeScreen} />
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="Register" component={RegisterScreen} />
                     </>
-                )}
+                )} */}
             </Stack.Navigator>
         </>
     );

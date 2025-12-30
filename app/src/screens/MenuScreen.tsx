@@ -96,12 +96,12 @@ export default function MenuScreen() {
                                 <Text style={[styles.guestSubtitle, { color: theme.colors.textSecondary }]}>Log in to manage your portfolio</Text>
                             </View>
                         </View>
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                             style={[styles.loginButtonDisplay, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '10' }]}
                             onPress={() => logout()}
                         >
                             <Text style={[styles.loginButtonText, { color: theme.colors.primary }]}>Log In / Sign Up</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                 )}
 

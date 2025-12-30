@@ -26,7 +26,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [isGuestMode, setIsGuestMode] = useState<boolean>(false);
+    const [isGuestMode, setIsGuestMode] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     // Mutations
@@ -40,10 +40,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const loadUser = async () => {
         setIsLoading(true); // Initial load
         try {
-            const guest = await AsyncStorage.getItem('isGuest');
+            /* const guest = await AsyncStorage.getItem('isGuest');
             if (guest === 'true') {
                 setIsGuestMode(true);
-            }
+            } */
 
             const userData = await AsyncStorage.getItem('user');
             if (userData) {
